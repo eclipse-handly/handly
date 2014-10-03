@@ -88,8 +88,9 @@ public class TextFileBuffer
             if (!buffer.isSynchronizationContextRequested())
                 return operation.execute(monitor);
 
-            UiBufferChangeRunner runner =
-                new UiBufferChangeRunner(UiSynchronizer.DEFAULT, operation);
+            final UiBufferChangeRunner runner =
+                new UiBufferChangeRunner(UiSynchronizer.getInstance(),
+                    operation);
             return runner.run(monitor);
         }
         catch (MalformedTreeException e)

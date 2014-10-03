@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *     Vladimir Piskarev (1C) - initial API and implementation
  *******************************************************************************/
@@ -54,9 +54,9 @@ import org.eclipse.xtext.util.concurrent.IUnitOfWork;
 import com.google.inject.Inject;
 
 /**
- * Extends {@link XtextDocument} for our reconciling story. 
+ * Extends {@link XtextDocument} for our reconciling story.
  * Implements {@link IHandlyXtextDocument}.
- * 
+ *
  * @noextend This class is not intended to be extended by clients.
  */
 public class HandlyXtextDocument
@@ -171,13 +171,13 @@ public class HandlyXtextDocument
     }
 
     /**
-     * Reparses the resource so it becomes reconciled with the document contents. 
+     * Reparses the resource so it becomes reconciled with the document contents.
      * Does nothing if already reconciled and <code>force == false</code>.
      * For internal use only.
      *
-     * @param force indicates whether reconciling has to be performed 
+     * @param force indicates whether reconciling has to be performed
      *  even if it is not {@link #needsReconciling() needed}
-     * @param processor the processor to execute the reconciling unit of work 
+     * @param processor the processor to execute the reconciling unit of work
      *  or <code>null</code> if no special processor is needed
      * @return <code>true</code> if the document had any changes to be reconciled,
      *   <code>false</code> otherwise
@@ -213,7 +213,7 @@ public class HandlyXtextDocument
         DocumentChangeOperation operation =
             new DocumentChangeOperation(this, change);
         UiDocumentChangeRunner runner =
-            new UiDocumentChangeRunner(UiSynchronizer.DEFAULT, operation);
+            new UiDocumentChangeRunner(UiSynchronizer.getInstance(), operation);
         return runner.run();
     }
 
@@ -275,14 +275,14 @@ public class HandlyXtextDocument
     }
 
     /*
-     * Called just after a reconciling operation has been performed. Informs 
-     * that the document's XtextResource contents is based on the given snapshot. 
-     * Notifies reconciling listerners (if any). Should only be called 
-     * in the dynamic context of {@link XtextDocument#internalModify}. 
+     * Called just after a reconciling operation has been performed. Informs
+     * that the document's XtextResource contents is based on the given snapshot.
+     * Notifies reconciling listerners (if any). Should only be called
+     * in the dynamic context of {@link XtextDocument#internalModify}.
      *
      * @param resource the reconciled resource - must not be <code>null</code>
      * @param snapshot the reconciled snapshot - must not be <code>null</code>
-     * @param forced whether reconciling was forced, i.e. the document has not 
+     * @param forced whether reconciling was forced, i.e. the document has not
      *  changed since it was reconciled the last time
      */
     private void reconciled(final XtextResource resource,
@@ -366,7 +366,7 @@ public class HandlyXtextDocument
     private static void clearInternalState(XtextResource resource)
         throws Exception
     {
-        // Ensure that the resource's derived state (if any) is discarded 
+        // Ensure that the resource's derived state (if any) is discarded
         // and that clear doesn't make derived state to be installed
         Field isUpdating = XtextResource.class.getDeclaredField("isUpdating"); //$NON-NLS-1$
         isUpdating.setAccessible(true);
@@ -390,12 +390,12 @@ public class HandlyXtextDocument
     public interface IReconcilingListener
     {
         /**
-         * Called just after a reconciling operation has been performed. Informs 
+         * Called just after a reconciling operation has been performed. Informs
          * that the given resource contents is based on the given snapshot.
          * <p>
-         * Implementations of this method must not modify the resource and 
-         * must not keep any references to it. The resource is safe to read 
-         * in the dynamic context of the method call. The resource has bindings 
+         * Implementations of this method must not modify the resource and
+         * must not keep any references to it. The resource is safe to read
+         * in the dynamic context of the method call. The resource has bindings
          * to text positions in the given snapshot.
          * </p>
          * <p>
@@ -404,7 +404,7 @@ public class HandlyXtextDocument
          *
          * @param resource the reconciled resource - must not be <code>null</code>
          * @param snapshot the reconciled snapshot - must not be <code>null</code>
-         * @param forced whether reconciling was forced, i.e. the document 
+         * @param forced whether reconciling was forced, i.e. the document
          *  has not changed since it was reconciled the last time
          */
         void reconciled(XtextResource resource, NonExpiringSnapshot snapshot,
@@ -557,8 +557,8 @@ public class HandlyXtextDocument
                 try
                 {
                     // resolve all proxies before model modification
-                    // (otherwise, proxy resolution might throw exceptions 
-                    // due to inconsistency between 'changed' model and 
+                    // (otherwise, proxy resolution might throw exceptions
+                    // due to inconsistency between 'changed' model and
                     // 'old' proxy URIs)
                     EcoreUtil2.resolveLazyCrossReferences(resource,
                         CancelIndicator.NullImpl);

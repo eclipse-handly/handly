@@ -83,8 +83,8 @@ public class TextEditorBuffer
             pm = new NullProgressMonitor();
         try
         {
-            UiBufferChangeRunner runner =
-                new UiBufferChangeRunner(UiSynchronizer.DEFAULT,
+            final UiBufferChangeRunner runner =
+                new UiBufferChangeRunner(UiSynchronizer.getInstance(),
                     createChangeOperation(change));
             return runner.run(pm);
         }

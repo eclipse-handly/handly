@@ -11,12 +11,8 @@
 package org.eclipse.handly.internal;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.handly.util.UiSynchronizer;
-import org.eclipse.ui.PlatformUI;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -58,20 +54,12 @@ public class Activator
     public void start(BundleContext context) throws Exception
     {
         super.start(context);
-        Bundle b = Platform.getBundle("org.eclipse.ui"); //$NON-NLS-1$
-        if (b != null && b.getState() == Bundle.ACTIVE
-            && PlatformUI.isWorkbenchRunning())
-        {
-            UiSynchronizer.DEFAULT =
-                new DisplaySynchronizer(PlatformUI.getWorkbench().getDisplay());
-        }
     }
 
     @Override
     public void stop(BundleContext context) throws Exception
     {
         super.stop(context);
-        UiSynchronizer.DEFAULT = null;
         plugin = null;
     }
 }
