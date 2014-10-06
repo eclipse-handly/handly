@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a766b734_7160c1ae",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 7131
+      },
+      "writtenOn": "2014-10-06T06:35:02Z",
+      "side": 1,
+      "message": "Generally, we use the following form of the commit message [1]:\n\n \u003cbug number and title\u003e (can be copied right from bugzilla)\n\n [optional comments] (no need to use a separate Bug attribute)\n\nSo, in this case, it would be:\n\n Bug 445895 - core plugin has dependency on UI\n\n Moved UiSynchronizer implementation to UI plugin.\n\n Signed-off-by: ...\n\n[1] https://wiki.eclipse.org/Handly/Committer_FAQ#What_comment_should_I_associate_with_a_commit.3F.",
+      "revId": "229e172313dc9f580da8999efb02059649877ac1",
+      "serverId": "97ee7c02-f12f-4043-b43e-dea463d88b31",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a766b734_b16a598c",
+        "filename": "org.eclipse.handly.ui/plugin.xml",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 7131
+      },
+      "writtenOn": "2014-10-06T06:35:02Z",
+      "side": 1,
+      "message": "Where possible, new files should contain copyright and license notice: https://www.eclipse.org/legal/copyrightandlicensenotice.php.\n\nPlease see o.e.handly.examples.basic.ui/plugin.xml for an example.",
+      "revId": "229e172313dc9f580da8999efb02059649877ac1",
+      "serverId": "97ee7c02-f12f-4043-b43e-dea463d88b31",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a766b734_1157cdd7",
+        "filename": "org.eclipse.handly.ui/src/org/eclipse/handly/internal/ui/DisplaySynchronizer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 7131
+      },
+      "writtenOn": "2014-10-06T06:35:02Z",
+      "side": 1,
+      "message": "This may throw exception if the workbench is not running. I would avoid this constructor entirely.",
+      "revId": "229e172313dc9f580da8999efb02059649877ac1",
+      "serverId": "97ee7c02-f12f-4043-b43e-dea463d88b31",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a766b734_f15b3100",
+        "filename": "org.eclipse.handly.ui/src/org/eclipse/handly/internal/ui/DisplaySynchronizer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 7131
+      },
+      "writtenOn": "2014-10-06T06:35:02Z",
+      "side": 1,
+      "message": "The project\u0027s coding style avoids using the \u0027final\u0027 modifier for parameters and local variables unless it\u0027s really necessary. We do use \u0027final\u0027 for immutable fields.\n\nThis comment applies to other files in the patch too.",
+      "revId": "229e172313dc9f580da8999efb02059649877ac1",
+      "serverId": "97ee7c02-f12f-4043-b43e-dea463d88b31",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a766b734_515145de",
+        "filename": "org.eclipse.handly/META-INF/MANIFEST.MF",
+        "patchSetId": 2
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 7131
+      },
+      "writtenOn": "2014-10-06T06:35:02Z",
+      "side": 1,
+      "message": "I assume the whole idea was to remove this dependency ;-)",
+      "revId": "229e172313dc9f580da8999efb02059649877ac1",
+      "serverId": "97ee7c02-f12f-4043-b43e-dea463d88b31",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a766b734_315649d8",
+        "filename": "org.eclipse.handly/META-INF/MANIFEST.MF",
+        "patchSetId": 2
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 7131
+      },
+      "writtenOn": "2014-10-06T06:35:02Z",
+      "side": 1,
+      "message": "I would avoid exposing this internal package. There seems to be no value in doing so in this case.",
+      "revId": "229e172313dc9f580da8999efb02059649877ac1",
+      "serverId": "97ee7c02-f12f-4043-b43e-dea463d88b31",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a766b734_914abd2b",
+        "filename": "org.eclipse.handly/schema/uisynchronizer.exsd",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 7131
+      },
+      "writtenOn": "2014-10-06T06:35:02Z",
+      "side": 1,
+      "message": "Some documentation of the extension point would be welcome.",
+      "revId": "229e172313dc9f580da8999efb02059649877ac1",
+      "serverId": "97ee7c02-f12f-4043-b43e-dea463d88b31",
+      "unresolved": false
+    }
+  ]
+}
