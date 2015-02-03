@@ -55,6 +55,9 @@
     <module>../org.eclipse.handly.examples.basic</module>
     <module>../org.eclipse.handly.examples.basic.ui</module>
     <module>../org.eclipse.handly.examples.basic.ui.tests</module>
+    <module>../org.eclipse.handly.examples.javamodel</module>
+    <module>../org.eclipse.handly.examples.javamodel.tests</module>
+    <module>../org.eclipse.handly.examples.javamodel.ui</module>
     <module>../org.eclipse.handly-feature</module>
     <module>../org.eclipse.handly.xtext-feature</module>
     <module>../org.eclipse.handly.examples-feature</module>
