@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+    <classpathentry excluding="src2/" kind="src" path="src"/>
+    <classpathentry kind="src" path="src/src2"/>
+    <classpathentry kind="src" path="abc/src"/>
+    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+    <classpathentry kind="var" path="JRE_LIB"/>
+    <classpathentry kind="output" path="bin"/>
+</classpath>

@@ -11,20 +11,26 @@
 package org.eclipse.handly.internal.examples.javamodel;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.handly.examples.javamodel.IJavaModel;
 import org.eclipse.handly.examples.javamodel.IJavaProject;
+import org.eclipse.handly.examples.javamodel.IPackageFragmentRoot;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Handle;
 import org.eclipse.handly.model.impl.HandleManager;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.JavaCore;
 
 /**
- * Represents a Java project.
+ * Implementation of {@link IJavaProject}.
  */
 public class JavaProject
     extends Handle
@@ -73,6 +79,36 @@ public class JavaProject
     }
 
     @Override
+    public IPackageFragmentRoot getPackageFragmentRoot(IResource resource)
+    {
+        // In this example model, only folders that are direct children of the project
+        // can be viewed as a package fragment root (representing a source folder)
+        if (resource != null && resource.getType() == IResource.FOLDER
+            && resource.getParent().equals(project))
+        {
+            return new PackageFragmentRoot(this, resource);
+        }
+        return null;
+    }
+
+    @Override
+    public IPackageFragmentRoot[] getPackageFragmentRoots()
+        throws CoreException
+    {
+        IHandle[] children = getChildren();
+        int length = children.length;
+        IPackageFragmentRoot[] result = new IPackageFragmentRoot[length];
+        System.arraycopy(children, 0, result, 0, length);
+        return result;
+    }
+
+    @Override
+    public IResource[] getNonJavaResources() throws CoreException
+    {
+        return ((JavaProjectBody)getBody()).getNonJavaResources(this);
+    }
+
+    @Override
     protected HandleManager getHandleManager()
     {
         return JavaModelManager.INSTANCE.getHandleManager();
@@ -93,15 +129,57 @@ public class JavaProject
                     null));
 
         if (!project.hasNature(NATURE_ID))
-            throw new CoreException(
-                Activator.createErrorStatus(MessageFormat.format(
-                    "Project ''{0}'' does not have the Java nature", name), null));
+            throw new CoreException(Activator.createErrorStatus(
+                MessageFormat.format(
+                    "Project ''{0}'' does not have the Java nature", name),
+                null));
     }
 
     @Override
     protected void buildStructure(Body body, Map<IHandle, Body> newElements)
         throws CoreException
     {
-        // TODO Auto-generated method stub
+        IClasspathEntry[] rawClasspath = getRawClasspath();
+        List<IPackageFragmentRoot> roots =
+            new ArrayList<IPackageFragmentRoot>();
+        IPath projectPath = getPath();
+        for (IClasspathEntry classpathEntry : rawClasspath)
+        {
+            IPackageFragmentRoot root = null;
+            IPath entryPath = classpathEntry.getPath();
+            int entryKind = classpathEntry.getEntryKind();
+            // In this example model, only source folders that are
+            // direct children of the project resource are represented
+            // as package fragment roots
+            if (entryKind == IClasspathEntry.CPE_SOURCE)
+            {
+                if (projectPath.isPrefixOf(entryPath)
+                    && entryPath.segmentCount() == 2)
+                {
+                    IResource resource =
+                        project.getParent().findMember(entryPath);
+                    if (resource != null
+                        && resource.getType() == IResource.FOLDER)
+                    {
+                        root = new PackageFragmentRoot(this, resource);
+                    }
+                }
+            }
+            if (root != null)
+                roots.add(root);
+        }
+        body.setChildren(roots.toArray(new IHandle[roots.size()]));
+    }
+
+    @Override
+    protected Body newBody()
+    {
+        return new JavaProjectBody();
+    }
+
+    IClasspathEntry[] getRawClasspath() throws CoreException
+    {
+        // TODO Need to cache the result
+        return JavaCore.create(project).readRawClasspath();
     }
 }

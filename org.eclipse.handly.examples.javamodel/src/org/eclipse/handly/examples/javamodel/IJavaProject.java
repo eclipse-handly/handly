@@ -11,6 +11,8 @@
 package org.eclipse.handly.examples.javamodel;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 
 /**
  * A Java project represents a view of a project resource in terms of Java
@@ -38,4 +40,41 @@ public interface IJavaProject
      *  was created (never <code>null</code>)
      */
     IProject getProject();
+    
+    /**
+     * Returns a package fragment root for the given resource.
+     * This is a handle-only method. The underlying resource may
+     * or may not exist.
+     *
+     * @param resource the given resource (not <code>null</code>)
+     * @return a package fragment root for the given resource,
+     *  or <code>null</code> if unable to associate the given resource
+     *  with a package fragment root
+     */
+    IPackageFragmentRoot getPackageFragmentRoot(IResource resource);
+
+    /**
+     * Returns the package fragment roots contained in this project.
+     * The package fragment roots appear in the order they are defined
+     * by the classpath. This is equivalent to <code>getChildren()</code>.
+     *
+     * @return the package fragment roots contained in this project
+     *  (never <code>null</code>)
+     * @throws CoreException if this element does not exist or if an exception 
+     *  occurs while accessing its corresponding resource
+     */
+    IPackageFragmentRoot[] getPackageFragmentRoots() throws CoreException;
+
+    /**
+     * Returns the non-Java resources directly contained in this project.
+     * Non-Java resources include other files and folders located in the
+     * project not accounted for by any of its package fragment roots.
+     *
+     * @return the non-Java resources (<code>IFile</code>s and/or
+     *  <code>IFolder</code>s) directly contained in this project
+     *  (never <code>null</code>)
+     * @throws CoreException if this element does not exist or if an exception 
+     *  occurs while accessing its corresponding resource
+     */
+    IResource[] getNonJavaResources() throws CoreException;
 }
