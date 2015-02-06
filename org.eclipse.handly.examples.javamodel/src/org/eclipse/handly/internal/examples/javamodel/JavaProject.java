@@ -182,4 +182,11 @@ public class JavaProject
         // TODO Need to cache the result
         return JavaCore.create(project).readRawClasspath();
     }
+
+    String getOption(String optionName, boolean inheritJavaCoreOptions)
+    {
+        // Cheat and delegate directly to JDT
+        return JavaCore.create(project).getOption(optionName,
+            inheritJavaCoreOptions);
+    }
 }
