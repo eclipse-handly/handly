@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.handly.examples.javamodel.IJavaModel;
 import org.eclipse.handly.examples.javamodel.IJavaProject;
+import org.eclipse.handly.examples.javamodel.IPackageFragment;
 import org.eclipse.handly.examples.javamodel.IPackageFragmentRoot;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.impl.Body;
@@ -79,7 +80,7 @@ public class JavaProject
     }
 
     @Override
-    public IPackageFragmentRoot getPackageFragmentRoot(IResource resource)
+    public PackageFragmentRoot getPackageFragmentRoot(IResource resource)
     {
         // In this example model, only folders that are direct children of the project
         // can be viewed as a package fragment root (representing a source folder)
@@ -106,6 +107,68 @@ public class JavaProject
     public IResource[] getNonJavaResources() throws CoreException
     {
         return ((JavaProjectBody)getBody()).getNonJavaResources(this);
+    }
+
+    @Override
+    public IPackageFragment findPackageFragment(IResource resource)
+    {
+        // In this example model, only folders can correspond to a package fragment
+        if (resource.getType() != IResource.FOLDER)
+            return null;
+
+        if (!exists())
+            return null;
+
+        IPath resourcePath = resource.getFullPath();
+        try
+        {
+            IClasspathEntry[] rawClasspath = getRawClasspath();
+            for (IClasspathEntry entry : rawClasspath)
+            {
+                int entryKind = entry.getEntryKind();
+
+                // In this example model, only source folders are considered
+                if (entryKind != IClasspathEntry.CPE_SOURCE)
+                    continue;
+
+                IPath entryPath = entry.getPath();
+                if (entryPath.equals(resourcePath))
+                {
+                    PackageFragmentRoot root = getPackageFragmentRoot(resource);
+                    if (root == null)
+                        return null;
+                    return root.getPackageFragment(""); //$NON-NLS-1$
+                }
+                else if (entryPath.isPrefixOf(resourcePath))
+                {
+                    IResource rootFolder;
+                    if (entryPath.segmentCount() == 1)
+                        rootFolder = project;
+                    else
+                        rootFolder = project.getParent().getFolder(entryPath);
+
+                    PackageFragmentRoot root =
+                        getPackageFragmentRoot(rootFolder);
+                    if (root == null)
+                        return null;
+
+                    IPath packagePath =
+                        resourcePath.removeFirstSegments(entryPath.segmentCount());
+
+                    PackageFragment packageFragment =
+                        root.getPackageFragment(packagePath.segments());
+                    if (!packageFragment.isValidPackageName())
+                        return null;
+
+                    return packageFragment;
+                }
+            }
+        }
+        catch (CoreException e)
+        {
+            return null;
+        }
+        return null;
     }
 
     @Override
@@ -143,11 +206,11 @@ public class JavaProject
         List<IPackageFragmentRoot> roots =
             new ArrayList<IPackageFragmentRoot>();
         IPath projectPath = getPath();
-        for (IClasspathEntry classpathEntry : rawClasspath)
+        for (IClasspathEntry entry : rawClasspath)
         {
             IPackageFragmentRoot root = null;
-            IPath entryPath = classpathEntry.getPath();
-            int entryKind = classpathEntry.getEntryKind();
+            IPath entryPath = entry.getPath();
+            int entryKind = entry.getEntryKind();
             // In this example model, only source folders that are
             // direct children of the project resource are represented
             // as package fragment roots

@@ -10,7 +10,11 @@
  *******************************************************************************/
 package org.eclipse.handly.examples.javamodel;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.handly.internal.examples.javamodel.JavaModelManager;
 
 /**
@@ -29,13 +33,47 @@ public class JavaModelCore
     }
 
     /**
+     * Returns the Java element corresponding to the given resource,
+     * or <code>null</code> if unable to associate the given resource
+     * with a Java element.
+     * <p>
+     * The resource must be one of:
+     * <ul>
+     *  <li>a project - the element returned is the corresponding <code>IJavaProject</code></li>
+     *  <li>a Java source file - the element returned is the corresponding <code>ICompilationUnit</code></li>
+     *  <li>a folder - the element returned is the corresponding <code>IPackageFragment</code></li>
+     *  <li>the workspace root resource - the element returned is the <code>IJavaModel</code></li>
+     * </ul>
+     * </p>
+     *
+     * @param resource the given resource (may be <code>null</code>)
+     * @return the Java element corresponding to the given resource,
+     *  or <code>null</code> if unable to associate the given resource
+     *  with a Java element
+     */
+    public static IJavaElement create(IResource resource)
+    {
+        if (resource == null)
+            return null;
+
+        if (resource instanceof IProject)
+            return create((IProject)resource);
+        else if (resource instanceof IFolder)
+            return create((IFolder)resource);
+        else if (resource instanceof IFile)
+            return create((IFile)resource);
+        else
+            return getJavaModel(); // workspace root
+    }
+
+    /**
      * Returns the Java project corresponding to the given project.
      * <p>
      * Note that no check is done at this time on the existence 
      * or the nature of this project.
      * </p>
      *
-     * @param project the given project (maybe <code>null</code>)
+     * @param project the given project (may be <code>null</code>)
      * @return the Java project corresponding to the given project, 
      *  or <code>null</code> if the given project is <code>null</code>
      */
@@ -44,6 +82,63 @@ public class JavaModelCore
         if (project == null)
             return null;
         return getJavaModel().getJavaProject(project.getName());
+    }
+
+    /**
+     * Returns the package fragment corresponding to the given folder,
+     * or <code>null</code> if unable to associate the given folder
+     * with a package fragment.
+     *
+     * @param folder the given folder (may be <code>null</code>)
+     * @return the package fragment corresponding to the given folder,
+     *  or <code>null</code> if unable to associate the given folder
+     *  with a package fragment
+     */
+    public static IPackageFragment create(IFolder folder)
+    {
+        if (folder == null)
+            return null;
+        IJavaProject javaProject = create(folder.getProject());
+        return javaProject.findPackageFragment(folder);
+    }
+
+    /**
+     * Returns the Java element corresponding to the given file, or
+     * <code>null</code> if unable to associate the given file
+     * with a Java element.
+     *
+     * @param file the given file (may be <code>null</code>)
+     * @return the Java element corresponding to the given file, or
+     *  <code>null</code> if unable to associate the given file
+     *  with a Java element
+     */
+    public static IJavaElement create(IFile file)
+    {
+        // In this example model, we consider only Java source files
+        return createCompilationUnitFrom(file);
+    }
+
+    /**
+     * Returns the compilation unit corresponding to the given file,
+     * or <code>null</code> if unable to associate the given file
+     * with a compilation unit.
+     *
+     * @param file the given file (may be <code>null</code>)
+     * @return the compilation unit corresponding to the given file,
+     *  or <code>null</code> if unable to associate the given file
+     *  with a compilation unit
+     */
+    public static ICompilationUnit createCompilationUnitFrom(IFile file)
+    {
+        if (file == null)
+            return null;
+        IContainer parent = file.getParent();
+        if (!(parent instanceof IFolder))
+            return null; // in this example model, CU's parent must be a folder
+        IPackageFragment pkg = create((IFolder)parent);
+        if (pkg == null)
+            return null;
+        return pkg.getCompilationUnit(file.getName());
     }
 
     private JavaModelCore()

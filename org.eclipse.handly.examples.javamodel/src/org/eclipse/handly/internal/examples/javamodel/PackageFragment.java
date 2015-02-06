@@ -146,7 +146,7 @@ public class PackageFragment
                     resource.getFullPath()), null));
     }
 
-    private boolean isValidPackageName()
+    boolean isValidPackageName()
     {
         JavaProject javaProject = getParent().getParent();
         String sourceLevel =
