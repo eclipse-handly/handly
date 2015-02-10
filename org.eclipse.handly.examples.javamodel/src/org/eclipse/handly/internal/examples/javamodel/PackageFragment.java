@@ -11,14 +11,17 @@
 package org.eclipse.handly.internal.examples.javamodel;
 
 import java.text.MessageFormat;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.handly.examples.javamodel.ICompilationUnit;
 import org.eclipse.handly.examples.javamodel.IJavaModel;
 import org.eclipse.handly.examples.javamodel.IPackageFragment;
 import org.eclipse.handly.model.IHandle;
@@ -86,22 +89,40 @@ public class PackageFragment
         return ((IContainer)parent.getResource()).getFolder(path);
     }
 
-    public boolean isValidPackageName()
+    @Override
+    public ICompilationUnit getCompilationUnit(String name)
     {
-        JavaProject javaProject = getParent().getParent();
-        String sourceLevel =
-            javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
-        String complianceLevel =
-            javaProject.getOption(JavaCore.COMPILER_COMPLIANCE, true);
-        for (String simpleName : simpleNames)
-        {
-            if (JavaConventions.validateIdentifier(simpleName, sourceLevel,
-                complianceLevel).getSeverity() == IStatus.ERROR)
-            {
-                return false;
-            }
-        }
-        return true;
+        if (name == null)
+            throw new IllegalArgumentException();
+        return new CompilationUnit(this,
+            ((IContainer)getResource()).getFile(new Path(name)));
+    }
+
+    @Override
+    public ICompilationUnit[] getCompilationUnits() throws CoreException
+    {
+        IHandle[] children = getChildren();
+        int length = children.length;
+        ICompilationUnit[] result = new ICompilationUnit[length];
+        System.arraycopy(children, 0, result, 0, length);
+        return result;
+    }
+
+    @Override
+    public Object[] getNonJavaResources() throws CoreException
+    {
+        // Note: non-java resources of the default package are assigned
+        // to the package fragment root.
+        if (isDefaultPackage())
+            return PackageFragmentBody.NO_NON_JAVA_RESOURCES;
+        else
+            return ((PackageFragmentBody)getBody()).getNonJavaResources(this);
+    }
+
+    @Override
+    public boolean isDefaultPackage()
+    {
+        return name.isEmpty();
     }
 
     @Override
@@ -125,10 +146,55 @@ public class PackageFragment
                     resource.getFullPath()), null));
     }
 
+    private boolean isValidPackageName()
+    {
+        JavaProject javaProject = getParent().getParent();
+        String sourceLevel =
+            javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
+        String complianceLevel =
+            javaProject.getOption(JavaCore.COMPILER_COMPLIANCE, true);
+        for (String simpleName : simpleNames)
+        {
+            if (JavaConventions.validateIdentifier(simpleName, sourceLevel,
+                complianceLevel).getSeverity() == IStatus.ERROR)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    protected Body newBody()
+    {
+        return new PackageFragmentBody();
+    }
+
     @Override
     protected void buildStructure(Body body, Map<IHandle, Body> newElements)
         throws CoreException
     {
-        // TODO Auto-generated method stub
+        HashSet<ICompilationUnit> children = new HashSet<ICompilationUnit>();
+        IResource[] members = ((IContainer)getResource()).members();
+        if (members.length > 0)
+        {
+            JavaProject javaProject = getAncestor(JavaProject.class);
+            String sourceLevel =
+                javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
+            String complianceLevel =
+                javaProject.getOption(JavaCore.COMPILER_COMPLIANCE, true);
+            for (IResource member : members)
+            {
+                if (member instanceof IFile)
+                {
+                    if (JavaConventions.validateCompilationUnitName(
+                        member.getName(), sourceLevel, complianceLevel).getSeverity() != IStatus.ERROR)
+                    {
+                        children.add(new CompilationUnit(this, (IFile)member));
+                    }
+                }
+            }
+        }
+        body.setChildren(children.toArray(new IHandle[children.size()]));
     }
 }

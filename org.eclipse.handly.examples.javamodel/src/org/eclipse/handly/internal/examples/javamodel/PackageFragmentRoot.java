@@ -92,7 +92,7 @@ public class PackageFragmentRoot
     }
 
     @Override
-    public IPackageFragment getPackageFragment(String packageName)
+    public PackageFragment getPackageFragment(String packageName)
     {
         return new PackageFragment(this, packageName);
     }

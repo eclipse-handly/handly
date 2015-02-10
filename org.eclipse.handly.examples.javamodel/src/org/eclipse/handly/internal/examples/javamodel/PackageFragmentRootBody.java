@@ -10,15 +10,8 @@
  *******************************************************************************/
 package org.eclipse.handly.internal.examples.javamodel;
 
-import java.util.ArrayList;
-
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.handly.model.impl.Body;
-import org.eclipse.jdt.core.JavaConventions;
-import org.eclipse.jdt.core.JavaCore;
 
 /**
  * <code>Body</code> extension for the package fragment root.
@@ -48,41 +41,6 @@ public class PackageFragmentRootBody
     private Object[] computeNonJavaResources(PackageFragmentRoot root)
         throws CoreException
     {
-        ArrayList<Object> result = new ArrayList<Object>();
-        IResource resource = root.getResource();
-        if (resource.getType() == IResource.FOLDER
-            || resource.getType() == IResource.PROJECT)
-        {
-            IResource[] members = ((IContainer)resource).members();
-            if (members.length > 0)
-            {
-                JavaProject javaProject = root.getParent();
-                String sourceLevel =
-                    javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
-                String complianceLevel =
-                    javaProject.getOption(JavaCore.COMPILER_COMPLIANCE, true);
-                for (IResource member : members)
-                {
-                    if (member.getType() == IResource.FILE)
-                    {
-                        if (JavaConventions.validateCompilationUnitName(
-                            member.getName(), sourceLevel, complianceLevel).getSeverity() != IStatus.ERROR)
-                        {
-                            continue; // ignore .java files
-                        }
-                    }
-                    else if (member.getType() == IResource.FOLDER)
-                    {
-                        if (JavaConventions.validateIdentifier(
-                            member.getName(), sourceLevel, complianceLevel).getSeverity() != IStatus.ERROR)
-                        {
-                            continue; // ignore valid packages
-                        }
-                    }
-                    result.add(member);
-                }
-            }
-        }
-        return result.toArray(new Object[result.size()]);
+        return PackageFragmentBody.computeNonJavaResources(root.getPackageFragment("")); //$NON-NLS-1$
     }
 }
