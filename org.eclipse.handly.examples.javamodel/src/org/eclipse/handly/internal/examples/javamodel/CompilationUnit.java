@@ -17,7 +17,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.handly.examples.javamodel.ICompilationUnit;
+import org.eclipse.handly.examples.javamodel.IImportContainer;
+import org.eclipse.handly.examples.javamodel.IImportDeclaration;
 import org.eclipse.handly.examples.javamodel.IJavaModel;
+import org.eclipse.handly.examples.javamodel.IPackageDeclaration;
+import org.eclipse.handly.examples.javamodel.IType;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.HandleManager;
@@ -25,6 +29,8 @@ import org.eclipse.handly.model.impl.SourceElementBody;
 import org.eclipse.handly.model.impl.SourceFile;
 import org.eclipse.jdt.core.JavaConventions;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
 
 /**
  * Implementation of {@link ICompilationUnit}.
@@ -33,6 +39,9 @@ public class CompilationUnit
     extends SourceFile
     implements ICompilationUnit
 {
+    private static final IImportDeclaration[] NO_IMPORTS =
+        new IImportDeclaration[0];
+
     /**
      * Constructs a handle for a Java compilation unit with the given
      * parent element and the given underlying workspace file.
@@ -60,6 +69,51 @@ public class CompilationUnit
     public IJavaModel getRoot()
     {
         return (IJavaModel)super.getRoot();
+    }
+
+    @Override
+    public IImportDeclaration getImport(String name)
+    {
+        return getImportContainer().getImport(name);
+    }
+
+    @Override
+    public IImportContainer getImportContainer()
+    {
+        return new ImportContainer(this);
+    }
+
+    @Override
+    public IImportDeclaration[] getImports() throws CoreException
+    {
+        IImportContainer container = getImportContainer();
+        if (container.exists())
+            return container.getImports();
+        return NO_IMPORTS;
+    }
+
+    @Override
+    public IPackageDeclaration getPackageDeclaration(String name)
+    {
+        return new PackageDeclaration(this, name);
+    }
+
+    @Override
+    public IPackageDeclaration[] getPackageDeclarations() throws CoreException
+    {
+        return getChildren(IPackageDeclaration.class);
+    }
+
+    @Override
+    public IType getType(String name)
+    {
+        return new Type(this, name);
+    }
+
+    @Override
+    public IType[] getTypes() throws CoreException
+    {
+        return getChildren(IType.class);
     }
 
     @Override
@@ -92,14 +146,22 @@ public class CompilationUnit
     @Override
     protected Object createStructuralAst(String source) throws CoreException
     {
-        // TODO Auto-generated method stub
-        return null;
+        ASTParser parser = ASTParser.newParser(AST.JLS4);
+        parser.setSource(source.toCharArray());
+        parser.setFocalPosition(0); // reduced AST
+        JavaProject javaProject = getAncestor(JavaProject.class);
+        Map<String, String> options = javaProject.getOptions(true);
+        parser.setCompilerOptions(options);
+        return parser.createAST(null);
     }
 
     @Override
     protected void buildStructure(SourceElementBody body,
         Map<IHandle, Body> newElements, Object ast, String source)
     {
-        // TODO Auto-generated method stub
+        CompilatonUnitStructureBuilder builder =
+            new CompilatonUnitStructureBuilder(newElements);
+        builder.buildStructure(this, body,
+            (org.eclipse.jdt.core.dom.CompilationUnit)ast);
     }
 }

@@ -252,4 +252,11 @@ public class JavaProject
         return JavaCore.create(project).getOption(optionName,
             inheritJavaCoreOptions);
     }
+
+    @SuppressWarnings("unchecked")
+    Map<String, String> getOptions(boolean inheritJavaCoreOptions)
+    {
+        // Cheat and delegate directly to JDT
+        return JavaCore.create(project).getOptions(inheritJavaCoreOptions);
+    }
 }
