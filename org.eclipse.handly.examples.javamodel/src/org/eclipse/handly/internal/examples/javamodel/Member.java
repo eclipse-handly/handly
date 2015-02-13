@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.handly.internal.examples.javamodel;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.examples.javamodel.IJavaElement;
 import org.eclipse.handly.examples.javamodel.IJavaModel;
 import org.eclipse.handly.examples.javamodel.IMember;
@@ -25,6 +26,8 @@ public abstract class Member
     extends SourceConstruct
     implements IMember
 {
+    static final String[] NO_STRINGS = new String[0];
+    
     /**
      * Creates a handle for a member with the given parent element 
      * and the given name.
@@ -56,6 +59,12 @@ public abstract class Member
         if (parent instanceof IType)
             return (IType)parent;
         return null;
+    }
+
+    @Override
+    public int getFlags() throws CoreException
+    {
+        return getSourceElementInfo().get(FLAGS);
     }
 
     @Override
