@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,7 +18,7 @@ import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.ISourceConstruct;
 
 /**
- * Represents a construct inside a source file. 
+ * Represents a source element inside a module.
  */
 public abstract class SourceConstruct
     extends SourceElement
@@ -34,7 +34,7 @@ public abstract class SourceConstruct
      * @param name the name of the element, or <code>null</code> 
      *  if the element has no name
      */
-    public SourceConstruct(Handle parent, String name)
+    public SourceConstruct(SourceElement parent, String name)
     {
         super(parent, name);
     }
@@ -69,7 +69,13 @@ public abstract class SourceConstruct
     @Override
     public final IResource getResource()
     {
-        return getSourceFile().getResource();
+        return getModule().getResource();
+    }
+
+    @Override
+    public Module getModule()
+    {
+        return ((SourceElement)parent).getModule();
     }
 
     @Override
@@ -104,39 +110,47 @@ public abstract class SourceConstruct
     @Override
     public final boolean close()
     {
-        // SourceFile builds the whole structure
-        // and controls child lifecycle
+        // Module builds the whole structure and controls child life-cycle
         throw new AssertionError("This method should not be called"); //$NON-NLS-1$
     }
 
     @Override
     protected final void validateExistence() throws CoreException
     {
-        // SourceFile builds the whole structure
-        // and determines child existence
+        // Module builds the whole structure and determines child existence
         throw new AssertionError("This method should not be called"); //$NON-NLS-1$
     }
 
     @Override
     protected final Body newBody()
     {
-        // must return <code>null</code>.
-        // SourceFile builds the whole structure 
-        // and knows how to create child bodies
+        // must return <code>null</code>
+        // Module builds the whole structure and knows how to create child bodies
         return null;
     }
 
     @Override
     protected final Handle getOpenableParent()
     {
-        return getSourceFile();
+        return getModule();
     }
 
     @Override
     protected final void buildStructure(Body body,
         Map<IHandle, Body> newElements) throws CoreException
     {
-        // SourceFile builds the whole structure 
+        // Module builds the whole structure
         throw new AssertionError("This method should not be called"); //$NON-NLS-1$
+    }
+
+    @Override
+    protected void toStringName(StringBuilder builder)
+    {
+        super.toStringName(builder);
+        if (occurrenceCount > 1)
+        {
+            builder.append('#');
+            builder.append(occurrenceCount);
+        }
     }
 }

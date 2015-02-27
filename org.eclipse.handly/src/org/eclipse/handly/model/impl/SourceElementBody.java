@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -110,7 +110,7 @@ public class SourceElementBody
     }
 
     /**
-     * Sets the source file's snapshot on which this object is based. 
+     * Sets the source snapshot on which this object is based.
      *
      * @param snapshot not <code>null</code>
      */

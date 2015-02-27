@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,12 +24,10 @@ import org.eclipse.handly.buffer.IBuffer;
 import org.eclipse.handly.buffer.TextFileBuffer;
 import org.eclipse.handly.internal.Activator;
 import org.eclipse.handly.model.IHandle;
-import org.eclipse.handly.model.ISourceElement;
 import org.eclipse.handly.model.ISourceFile;
 import org.eclipse.handly.snapshot.ISnapshot;
 import org.eclipse.handly.snapshot.ISnapshotProvider;
 import org.eclipse.handly.snapshot.NonExpiringSnapshot;
-import org.eclipse.handly.snapshot.StaleSnapshotException;
 import org.eclipse.handly.snapshot.TextFileSnapshot;
 import org.eclipse.handly.util.TextRange;
 
@@ -37,7 +35,7 @@ import org.eclipse.handly.util.TextRange;
  * Represents a source file.
  */
 public abstract class SourceFile
-    extends SourceElement
+    extends Module
     implements ISourceFile
 {
     private static final ThreadLocal<AstHolder> AST_HOLDER =
@@ -79,24 +77,6 @@ public abstract class SourceFile
     public final SourceFile getSourceFile()
     {
         return this;
-    }
-
-    @Override
-    public final ISourceElement getElementAt(int position, ISnapshot base)
-    {
-        try
-        {
-            return getElementAt(this, position, base);
-        }
-        catch (CoreException e)
-        {
-            // ignore
-        }
-        catch (StaleSnapshotException e)
-        {
-            // ignore
-        }
-        return null;
     }
 
     @Override

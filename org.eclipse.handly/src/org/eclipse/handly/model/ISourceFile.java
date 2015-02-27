@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +14,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.handly.buffer.IBuffer;
-import org.eclipse.handly.snapshot.ISnapshot;
 
 /**
  * Represents a source file.
@@ -22,32 +21,15 @@ import org.eclipse.handly.snapshot.ISnapshot;
  * @noimplement This interface is not intended to be implemented by clients.
  */
 public interface ISourceFile
-    extends ISourceElement
+    extends IModule
 {
     /**
-     * Convenience method. Same as <code>getResource()</code>, 
-     * but saves a downcast. This is a handle-only method.
+     * Returns the underlying workspace file. This is a handle-only method.
      *
      * @return the underlying {@link IFile} (never <code>null</code>)
      * @see #getResource()
      */
     IFile getFile();
-
-    /**
-     * Returns the smallest element within this source file that includes 
-     * the given source position, or <code>null</code> if the given position 
-     * is not within the text range of this source file, or if the source file 
-     * does not exist or an exception occurs while accessing its corresponding 
-     * resource, or if snapshot inconcistency is detected. If no finer grained 
-     * element is found at the position, the source file itself is returned.
-     *
-     * @param position a source position inside the source file (0-based)
-     * @param base a snapshot on which the given position is based, 
-     *  or <code>null</code> if the snapshot is unknown or doesn't matter
-     * @return the innermost element enclosing the given source position, 
-     *  or <code>null</code> if none (including the source file itself).
-     */
-    ISourceElement getElementAt(int position, ISnapshot base);
 
     /**
      * Returns whether this source file is a working copy.

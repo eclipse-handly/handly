@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,8 +11,8 @@
 package org.eclipse.handly.ui.quickoutline;
 
 import org.eclipse.handly.internal.ui.SourceElementUtil;
+import org.eclipse.handly.model.IModule;
 import org.eclipse.handly.model.ISourceElement;
-import org.eclipse.handly.model.ISourceFile;
 import org.eclipse.handly.util.TextRange;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
@@ -33,8 +33,8 @@ public abstract class SourceElementOutlinePopup
         Object input = getTreeViewer().getInput();
         if (!(input instanceof ISourceElement))
             return null;
-        ISourceFile sourceFile = ((ISourceElement)input).getSourceFile();
-        return SourceElementUtil.getSourceElement(sourceFile,
+        IModule module = ((ISourceElement)input).getModule();
+        return SourceElementUtil.getSourceElement(module,
             ((ITextSelection)hostSelection).getOffset());
     }
 

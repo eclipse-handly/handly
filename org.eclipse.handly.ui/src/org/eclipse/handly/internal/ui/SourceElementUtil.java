@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.eclipse.handly.internal.ui;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.handly.model.IModule;
 import org.eclipse.handly.model.ISourceElement;
 import org.eclipse.handly.model.ISourceElementInfo;
 import org.eclipse.handly.model.ISourceFile;
@@ -22,34 +23,37 @@ import org.eclipse.handly.util.TextRange;
 public class SourceElementUtil
 {
     /**
-     * Returns the smallest element within the given source file 
+     * Returns the smallest element within the given module
      * that includes the given source position, or <code>null</code> 
-     * if the given position is not within the text range of this source file, 
-     * or if the source file does not exist or an exception occurs while 
+     * if the given position is not within the source range of the module,
+     * or if the module does not exist or an exception occurs while
      * accessing its corresponding resource. If no finer grained element 
-     * is found at the position, the source file itself is returned.
+     * is found at the position, the module itself is returned.
      * <p>
-     * As a side effect, reconciles the given source file.
+     * As a side effect, if the given module is a source file,
+     * it will be reconciled.
      * </p>
      *
-     * @param sourceFile the source file (not <code>null</code>)
-     * @param position a source position inside the source file (0-based)
+     * @param module the given module (not <code>null</code>)
+     * @param position a source position inside the module (0-based)
      * @return the innermost element enclosing the given source position, 
-     *  or <code>null</code> if none (including the source file itself)
+     *  or <code>null</code> if none (including the module itself)
      */
-    public static ISourceElement getSourceElement(ISourceFile sourceFile,
-        int position)
+    public static ISourceElement getSourceElement(IModule module, int position)
     {
-        try
+        if (module instanceof ISourceFile)
         {
-            sourceFile.reconcile(false, null);
+            try
+            {
+                ((ISourceFile)module).reconcile(false, null);
+            }
+            catch (CoreException e)
+            {
+                Activator.log(e.getStatus());
+                return null;
+            }
         }
-        catch (CoreException e)
-        {
-            Activator.log(e.getStatus());
-            return null;
-        }
-        return sourceFile.getElementAt(position, null);
+        return module.getElementAt(position, null);
     }
 
     /**

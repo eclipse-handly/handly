@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,8 +15,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.handly.internal.ui.SourceElementUtil;
+import org.eclipse.handly.model.IModule;
 import org.eclipse.handly.model.ISourceElement;
-import org.eclipse.handly.model.ISourceFile;
 import org.eclipse.handly.util.TextRange;
 import org.eclipse.jface.dialogs.IPageChangeProvider;
 import org.eclipse.jface.text.ITextSelection;
@@ -139,10 +139,9 @@ public class SourceElementLinkingHelper
         Object input = getOutlinePage().getTreeViewer().getInput();
         if (!(input instanceof ISourceElement))
             return null;
-        ISourceFile sourceFile = ((ISourceElement)input).getSourceFile();
+        IModule module = ((ISourceElement)input).getModule();
         ISourceElement element =
-            SourceElementUtil.getSourceElement(sourceFile,
-                selection.getOffset());
+            SourceElementUtil.getSourceElement(module, selection.getOffset());
         if (element == null)
             return null;
         return new StructuredSelection(element);
@@ -230,8 +229,8 @@ public class SourceElementLinkingHelper
                     if (control == null
                         || control.isDisposed()
                         || !(input instanceof ISourceElement)
-                        || !((ISourceFile)baseInput).getSourceFile().equals(
-                            ((ISourceFile)input).getSourceFile())
+                        || !((ISourceElement)baseInput).getModule().equals(
+                            ((ISourceElement)input).getModule())
                         || !baseSelection.equals(selection)
                         || !baseSelection.equals(editor.getSite().getSelectionProvider().getSelection()))
                         return; // the world has changed -> no work needs to be done
