@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,8 +19,8 @@ import org.eclipse.handly.snapshot.StaleSnapshotException;
 /**
  * Common superclass of {@link ISourceElement} implementations.
  * 
- * @noextend This class is not intended to be extended by clients. Clients 
- *  should extend either {@link SourceFile} or {@link SourceConstruct} instead.
+ * @see SourceFile
+ * @see SourceConstruct
  */
 public abstract class SourceElement
     extends Handle
@@ -42,15 +42,31 @@ public abstract class SourceElement
     }
 
     @Override
+    public final ISourceElement getElementAt(int position, ISnapshot base)
+    {
+        try
+        {
+            return getElementAt(this, position, base);
+        }
+        catch (CoreException e)
+        {
+            // ignore
+        }
+        catch (StaleSnapshotException e)
+        {
+            // ignore
+        }
+        return null;
+    }
+
+    @Override
     public ISourceElementInfo getSourceElementInfo() throws CoreException
     {
         return (ISourceElementInfo)getBody();
     }
 
-    public abstract SourceFile getSourceFile();
-
     /**
-     * Returns the smallest element within the given element that includes 
+     * Returns the smallest element within the given element that includes
      * the given source position, or <code>null</code> if the given position 
      * is not within the source range of the given element. If no finer grained 
      * element is found at the position, the given element is returned.
@@ -68,8 +84,8 @@ public abstract class SourceElement
      *  i.e. the given element's current structure and properties are based on 
      *  a different snapshot
      */
-    static ISourceElement getElementAt(ISourceElement element, int position,
-        ISnapshot base) throws CoreException
+    private static ISourceElement getElementAt(ISourceElement element,
+        int position, ISnapshot base) throws CoreException
     {
         ISourceElementInfo info = element.getSourceElementInfo();
         if (base != null && !base.isEqualTo(info.getSnapshot()))

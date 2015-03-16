@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,34 +22,43 @@ import org.eclipse.handly.util.TextRange;
 public class SourceElementUtil
 {
     /**
-     * Returns the smallest element within the given source file 
-     * that includes the given source position, or <code>null</code> 
-     * if the given position is not within the text range of this source file, 
-     * or if the source file does not exist or an exception occurs while 
-     * accessing its corresponding resource. If no finer grained element 
-     * is found at the position, the source file itself is returned.
+     * Returns the smallest element within the given element that includes
+     * the given source position, or <code>null</code> if the given position
+     * is not within the source range of the given element, or if the
+     * given element does not exist or an exception occurs while accessing
+     * its corresponding resource. If no finer grained element is found
+     * at the position, the given element is returned.
      * <p>
-     * As a side effect, reconciles the given source file.
+     * As a side effect, if the given element is contained in a source file,
+     * the source file will be reconciled.
      * </p>
      *
-     * @param sourceFile the source file (not <code>null</code>)
-     * @param position a source position inside the source file (0-based)
+     * @param element a source element (not <code>null</code>)
+     * @param position a source position (0-based)
      * @return the innermost element enclosing the given source position, 
-     *  or <code>null</code> if none (including the source file itself)
+     *  or <code>null</code> if none (including the given element)
      */
-    public static ISourceElement getSourceElement(ISourceFile sourceFile,
+    public static ISourceElement getElementAt(ISourceElement element,
         int position)
     {
-        try
+        ISourceFile sourceFile;
+        if (element instanceof ISourceFile)
+            sourceFile = (ISourceFile)element;
+        else
+            sourceFile = element.getAncestor(ISourceFile.class);
+        if (sourceFile != null)
         {
-            sourceFile.reconcile(false, null);
+            try
+            {
+                sourceFile.reconcile(false, null);
+            }
+            catch (CoreException e)
+            {
+                Activator.log(e.getStatus());
+                return null;
+            }
         }
-        catch (CoreException e)
-        {
-            Activator.log(e.getStatus());
-            return null;
-        }
-        return sourceFile.getElementAt(position, null);
+        return element.getElementAt(position, null);
     }
 
     /**
