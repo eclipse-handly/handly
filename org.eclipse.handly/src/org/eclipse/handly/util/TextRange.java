@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,8 +11,8 @@
 package org.eclipse.handly.util;
 
 /**
- * Describes a certain range in an indexed text store. Text stores are 
- * for example documents or strings. A text range is defined by its offset 
+ * Describes a certain range in an indexed text store. Text stores are
+ * for example documents or strings. A text range is defined by its offset
  * into the text store and its length.
  * <p>
  * A text range is a value object. Its offset and length do not change over time.
@@ -20,11 +20,6 @@ package org.eclipse.handly.util;
  */
 public final class TextRange
 {
-    /**
-     * Represents {@link #isNull() null} range.
-     */
-    public static final TextRange NULL_RANGE = new TextRange(-1, 0);
-
     private final int offset;
     private final int length;
 
@@ -36,7 +31,7 @@ public final class TextRange
      */
     public TextRange(int offset, int length)
     {
-        if (offset < -1) // -1 -> 'null' range
+        if (offset < 0)
             throw new IllegalArgumentException();
         if (length < 0)
             throw new IllegalArgumentException();
@@ -47,8 +42,7 @@ public final class TextRange
     }
 
     /**
-     * @return the 0-based index of the first character of this text range. 
-     *  Returns -1 for a {@link #isNull() null} range
+     * @return the 0-based index of the first character of this text range
      */
     public int getOffset()
     {
@@ -56,7 +50,7 @@ public final class TextRange
     }
 
     /**
-     * @return the number of characters in this text range. Returns 0 for 
+     * @return the number of characters in this text range. Returns 0 for
      *  an {@link #isEmpty() empty} range
      */
     public int getLength()
@@ -65,8 +59,8 @@ public final class TextRange
     }
 
     /**
-     * @return the 0-based index of the next character of this text range. 
-     *  The returned value is the result of the following calculation: 
+     * @return the 0-based index of the next character of this text range.
+     *  The returned value is the result of the following calculation:
      *  <code>getOffset() + getLength()</code>
      */
     public int getEndOffset()
@@ -75,7 +69,7 @@ public final class TextRange
     }
 
     /**
-     * @return <code>true</code> if this text range is empty 
+     * @return <code>true</code> if this text range is empty
      *  (i.e. its length is 0), and <code>false</code> otherwise
      */
     public boolean isEmpty()
@@ -84,21 +78,11 @@ public final class TextRange
     }
 
     /**
-     * @return <code>true</code> if this text range does not describe a range 
-     *  with a non-negative offset (i.e. a 'real' range) in a text store, 
-     *  and <code>false</code> otherwise.
-     */
-    public boolean isNull()
-    {
-        return NULL_RANGE.equals(this);
-    }
-
-    /**
-     * Returns whether this text range covers the given position, 
+     * Returns whether this text range covers the given position,
      * excluding the {@link #getEndOffset() end offset} of the range.
      *
      * @param position a text position (0-based)
-     * @return <code>true</code> if this text range strictly covers the given 
+     * @return <code>true</code> if this text range strictly covers the given
      *  position, and <code>false</code> otherwise
      * @see #covers(int)
      */
@@ -108,11 +92,11 @@ public final class TextRange
     }
 
     /**
-     * Returns whether this text range covers the given position, 
+     * Returns whether this text range covers the given position,
      * including the {@link #getEndOffset() end offset} of the range.
      *
      * @param position a text position (0-based)
-     * @return <code>true</code> if this text range covers the given position, 
+     * @return <code>true</code> if this text range covers the given position,
      *  and <code>false</code> otherwise
      * @see #strictlyCovers(int)
      */
@@ -151,6 +135,6 @@ public final class TextRange
     @Override
     public String toString()
     {
-        return "offset=" + offset + ", length=" + length; //$NON-NLS-1$ //$NON-NLS-2$
+        return "[offset=" + offset + ", length=" + length + ']'; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

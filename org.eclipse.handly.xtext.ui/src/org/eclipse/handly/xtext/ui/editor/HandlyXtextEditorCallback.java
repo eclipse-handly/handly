@@ -115,7 +115,7 @@ public class HandlyXtextEditorCallback
             return null;
         return (SourceFile)getSourceFileFactory().getSourceFile(file);
     }
-    
+
     protected ISourceFileFactory getSourceFileFactory()
     {
         return sourceFileFactory;
@@ -287,7 +287,8 @@ public class HandlyXtextEditorCallback
                     resetEditorHighlightRange(args);
                     return e.getStatus();
                 }
-                setEditorHighlightRange(args, r.getOffset(), r.getLength());
+                if (r != null)
+                    setEditorHighlightRange(args, r.getOffset(), r.getLength());
             }
             return Status.OK_STATUS;
         }
