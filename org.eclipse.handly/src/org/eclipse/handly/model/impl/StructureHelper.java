@@ -18,7 +18,8 @@ import java.util.Map;
 import org.eclipse.handly.model.IHandle;
 
 /**
- * A useful superclass for structure builders.
+ * A useful superclass for structure builders of "terminal openables"
+ * such as source files.
  * <p>
  * Subclasses provide a client API of the structure builder. 
  * Subclasses call {@link #addChild(Body, IHandle, Body)} and 

@@ -81,7 +81,7 @@ public class ProblemMarkerLabelDecorator
             if (!sourceConstruct.exists())
                 return null;
             textRange = sourceConstruct.getSourceElementInfo().getFullRange();
-            if (textRange.isNull())
+            if (textRange == null)
                 return null;
         }
         return findMaxProblemSeverity(resource, IResource.DEPTH_INFINITE,

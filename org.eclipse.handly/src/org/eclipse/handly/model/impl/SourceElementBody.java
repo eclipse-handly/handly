@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,7 +22,7 @@ import org.eclipse.handly.snapshot.ISnapshot;
 import org.eclipse.handly.util.TextRange;
 
 /**
- * Holds cached structure and properties for a source element. 
+ * Holds cached structure and properties for a source element.
  * Can be subclassed for specific kinds of elements.
  * 
  * @see ISourceElementInfo
@@ -35,8 +35,8 @@ public class SourceElementBody
 
     private ISnapshot snapshot;
     private Property[] properties = NO_PROPERTIES;
-    private TextRange fullRange = TextRange.NULL_RANGE;
-    private TextRange identifyingRange = TextRange.NULL_RANGE;
+    private TextRange fullRange;
+    private TextRange identifyingRange;
 
     @Override
     public ISourceConstruct[] getChildren()
@@ -80,8 +80,7 @@ public class SourceElementBody
     }
 
     /**
-     * Sets the value of the given property according to the {@link 
-     * #getSnapshot() snapshot}.
+     * Sets the value of the given property.
      *
      * @param p a source element's property (not <code>null</code>)
      * @param value the value of the given property (may be <code>null</code>)
@@ -110,40 +109,32 @@ public class SourceElementBody
     }
 
     /**
-     * Sets the source file's snapshot on which this object is based. 
+     * Sets the source snapshot on which this object is based.
      *
-     * @param snapshot not <code>null</code>
+     * @param snapshot
      */
     public void setSnapshot(ISnapshot snapshot)
     {
-        if (snapshot == null)
-            throw new IllegalArgumentException();
         this.snapshot = snapshot;
     }
 
     /**
-     * Sets the text range of the source element in the {@link #getSnapshot() 
-     * snapshot}.
+     * Sets the text range of the source element.
      *
-     * @param fullRange not <code>null</code>
+     * @param fullRange
      */
     public void setFullRange(TextRange fullRange)
     {
-        if (fullRange == null)
-            throw new IllegalArgumentException();
         this.fullRange = fullRange;
     }
 
     /**
-     * Sets the text range of the source element's identifier in the {@link 
-     * #getSnapshot() snapshot}. 
+     * Sets the text range of the source element's identifier.
      *
-     * @param identifyingRange not <code>null</code>
+     * @param identifyingRange
      */
     public void setIdentifyingRange(TextRange identifyingRange)
     {
-        if (identifyingRange == null)
-            throw new IllegalArgumentException();
         this.identifyingRange = identifyingRange;
     }
 
@@ -175,14 +166,14 @@ public class SourceElementBody
     /**
      * Returns whether the given property has changed value.
      * <p>
-     * Default implementation compares the new value and the old value 
+     * Default implementation compares the new value and the old value
      * for equality (arrays are compared with <code>Arrays.equals</code>).
      * </p>
      *
      * @param propertyName the name of the property (never <code>null</code>)
      * @param newValue the new value of the property (may be <code>null</code>)
      * @param oldValue the old value of the property (may be <code>null</code>)
-     * @return <code>true</code> if the property has changed value, and 
+     * @return <code>true</code> if the property has changed value, and
      *  <code>false</code> otherwise
      */
     protected boolean isPropertyChanged(String propertyName, Object newValue,
