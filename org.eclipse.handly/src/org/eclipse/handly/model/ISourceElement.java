@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,11 +11,11 @@
 package org.eclipse.handly.model;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.handly.snapshot.ISnapshot;
 
 /**
- * Represents a source file or a construct inside a source file. 
- * The children are source constructs and appear in the order 
- * in which they are declared in the source.
+ * Common protocol for elements that have associated source code.
+ * The children are source constructs and appear in declaration order.
  * 
  * @noimplement This interface is not intended to be implemented by clients.
  * @noextend This interface is not intended to be extended by clients.
@@ -24,13 +24,20 @@ public interface ISourceElement
     extends IHandle
 {
     /**
-     * Returns the source file containing this element. 
-     * Returns this element if it is a source file. 
-     * This is a handle-only method.
-     * 
-     * @return the source file (never <code>null</code>)
+     * Returns the smallest element within this element that includes
+     * the given source position, or <code>null</code> if the given position
+     * is not within the source range of this element, or if this element does not
+     * exist or an exception occurs while accessing its corresponding resource,
+     * or if snapshot inconsistency is detected. If no finer grained element
+     * is found at the position, this element itself is returned.
+     *
+     * @param position a source position (0-based)
+     * @param base a snapshot on which the given position is based,
+     *  or <code>null</code> if the snapshot is unknown or doesn't matter
+     * @return the innermost element enclosing the given source position,
+     *  or <code>null</code> if none (including this element itself)
      */
-    ISourceFile getSourceFile();
+    ISourceElement getElementAt(int position, ISnapshot base);
 
     /**
      * Returns an object holding cached structure and properties for this element.
