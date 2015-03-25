@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -401,6 +401,14 @@ public abstract class SourceFile
     protected boolean shouldRebuildStructureIfForced()
     {
         return false;
+    }
+
+    @Override
+    protected void toStringName(StringBuilder builder)
+    {
+        if (isWorkingCopy())
+            builder.append("[Working copy] "); //$NON-NLS-1$
+        super.toStringName(builder);
     }
 
     private static void setSnapshot(SourceElementBody body, ISnapshot snapshot,

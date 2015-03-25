@@ -36,15 +36,6 @@ public class JavaModelCore
      * Returns the Java element corresponding to the given resource,
      * or <code>null</code> if unable to associate the given resource
      * with a Java element.
-     * <p>
-     * The resource must be one of:
-     * <ul>
-     *  <li>a project - the element returned is the corresponding <code>IJavaProject</code></li>
-     *  <li>a Java source file - the element returned is the corresponding <code>ICompilationUnit</code></li>
-     *  <li>a folder - the element returned is the corresponding <code>IPackageFragment</code></li>
-     *  <li>the workspace root resource - the element returned is the <code>IJavaModel</code></li>
-     * </ul>
-     * </p>
      *
      * @param resource the given resource (may be <code>null</code>)
      * @return the Java element corresponding to the given resource,
@@ -85,21 +76,27 @@ public class JavaModelCore
     }
 
     /**
-     * Returns the package fragment corresponding to the given folder,
-     * or <code>null</code> if unable to associate the given folder
-     * with a package fragment.
+     * Returns the package fragment or package fragment root corresponding
+     * to the given folder, or <code>null</code> if unable to associate
+     * the given folder with a Java element.
+     * <p>
+     * Note that a package fragment root is returned rather than a default package.
+     * </p>
      *
      * @param folder the given folder (may be <code>null</code>)
-     * @return the package fragment corresponding to the given folder,
-     *  or <code>null</code> if unable to associate the given folder
-     *  with a package fragment
+     * @return the package fragment or package fragment root corresponding
+     *  to the given folder, or <code>null</code> if unable to associate
+     *  the given folder with a Java element
      */
-    public static IPackageFragment create(IFolder folder)
+    public static IJavaElement create(IFolder folder)
     {
         if (folder == null)
             return null;
         IJavaProject javaProject = create(folder.getProject());
-        return javaProject.findPackageFragment(folder);
+        IPackageFragment pkg = javaProject.findPackageFragment(folder);
+        if (pkg != null && pkg.isDefaultPackage())
+            return pkg.getParent();
+        return pkg;
     }
 
     /**
@@ -115,13 +112,15 @@ public class JavaModelCore
     public static IJavaElement create(IFile file)
     {
         // In this example model, we consider only Java source files
-        return createCompilationUnitFrom(file);
+        if ("java".equals(file.getFileExtension())) //$NON-NLS-1$
+            return createCompilationUnitFrom(file);
+        return null;
     }
 
     /**
      * Returns the compilation unit corresponding to the given file,
      * or <code>null</code> if unable to associate the given file
-     * with a compilation unit.
+     * with a compilation unit. The file must be a <code>.java</code> file.
      *
      * @param file the given file (may be <code>null</code>)
      * @return the compilation unit corresponding to the given file,
@@ -135,9 +134,12 @@ public class JavaModelCore
         IContainer parent = file.getParent();
         if (!(parent instanceof IFolder))
             return null; // in this example model, CU's parent must be a folder
-        IPackageFragment pkg = create((IFolder)parent);
-        if (pkg == null)
+        IJavaElement element = create((IFolder)parent);
+        if (element == null)
             return null;
+        IPackageFragment pkg =
+            element instanceof IPackageFragment ? (IPackageFragment)element
+                : ((IPackageFragmentRoot)element).getPackageFragment(""); //$NON-NLS-1$
         return pkg.getCompilationUnit(file.getName());
     }
 

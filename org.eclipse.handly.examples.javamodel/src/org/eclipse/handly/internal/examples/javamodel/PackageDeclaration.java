@@ -57,7 +57,7 @@ public class PackageDeclaration
     @Override
     protected void toStringName(StringBuilder builder)
     {
-        builder.append("package ");
+        builder.append("package "); //$NON-NLS-1$
         super.toStringName(builder);
     }
 }

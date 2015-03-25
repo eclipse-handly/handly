@@ -12,7 +12,10 @@ package org.eclipse.handly.internal.examples.javamodel;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.examples.javamodel.IField;
+import org.eclipse.handly.model.impl.Body;
+import org.eclipse.handly.model.impl.SourceElementBody;
 import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.Signature;
 
 /**
  * Implementation of {@link IField}.
@@ -51,5 +54,24 @@ public class Field
     public boolean isEnumConstant() throws CoreException
     {
         return Flags.isEnum(getFlags());
+    }
+
+    @Override
+    protected void toStringBody(int tab, StringBuilder builder, Body body,
+        boolean showResolvedInfo)
+    {
+        builder.append(tabString(tab));
+        if (body != null)
+        {
+            SourceElementBody fieldBody = (SourceElementBody)body;
+            String type = fieldBody.get(TYPE);
+            builder.append(Signature.toString(type));
+            builder.append(' ');
+        }
+        toStringName(builder);
+        if (body == null)
+        {
+            builder.append(" (not open)"); //$NON-NLS-1$
+        }
     }
 }

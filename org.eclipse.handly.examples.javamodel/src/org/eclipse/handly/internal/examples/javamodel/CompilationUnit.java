@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.handly.internal.examples.javamodel;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -54,8 +53,7 @@ public class CompilationUnit
         super(parent, file);
         if (!file.getParent().equals(parent.getResource()))
             throw new IllegalArgumentException();
-        if (!Arrays.asList(JavaCore.getJavaLikeExtensions()).contains(
-            file.getFileExtension()))
+        if (!"java".equals(file.getFileExtension())) //$NON-NLS-1$
             throw new IllegalArgumentException();
     }
 
@@ -132,7 +130,7 @@ public class CompilationUnit
             throw new CoreException(status);
     }
 
-    private IStatus validateCompilationUnitName()
+    IStatus validateCompilationUnitName()
     {
         JavaProject javaProject = getAncestor(JavaProject.class);
         String sourceLevel =

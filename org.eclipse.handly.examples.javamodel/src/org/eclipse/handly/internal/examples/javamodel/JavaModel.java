@@ -45,7 +45,7 @@ public class JavaModel
      */
     public JavaModel(IWorkspace workspace)
     {
-        super(null, "JavaModel"); //$NON-NLS-1$
+        super(null, "Java Model"); //$NON-NLS-1$
         if (workspace == null)
             throw new IllegalArgumentException();
         this.workspace = workspace;

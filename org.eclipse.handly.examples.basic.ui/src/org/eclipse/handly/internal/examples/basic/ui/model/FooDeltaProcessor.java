@@ -37,7 +37,7 @@ import org.eclipse.handly.model.impl.HandleDelta;
 /**
  * This class is used by the <code>FooModelManager</code> to convert 
  * resource deltas into Foo element deltas. It also does some processing 
- * on the Foo elemens involved (e.g. closing them).
+ * on the Foo elements involved (e.g. closing them).
  */
 class FooDeltaProcessor
     implements IResourceDeltaVisitor

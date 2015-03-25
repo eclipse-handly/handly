@@ -15,6 +15,8 @@ import org.eclipse.handly.examples.javamodel.IImportContainer;
 import org.eclipse.handly.examples.javamodel.IImportDeclaration;
 import org.eclipse.handly.examples.javamodel.IJavaModel;
 import org.eclipse.handly.model.IHandle;
+import org.eclipse.handly.model.impl.Body;
+import org.eclipse.handly.model.impl.Handle;
 import org.eclipse.handly.model.impl.HandleManager;
 import org.eclipse.handly.model.impl.SourceConstruct;
 
@@ -73,5 +75,20 @@ public class ImportContainer
     protected void toStringName(StringBuilder builder)
     {
         builder.append("<import container>"); //$NON-NLS-1$
+    }
+
+    @Override
+    protected void toString(int tab, StringBuilder builder)
+    {
+        Body body = peekAtBody();
+        if (body == null)
+            return;
+        IHandle[] children = body.getChildren();
+        for (int i = 0; i < children.length; i++)
+        {
+            if (i > 0)
+                builder.append('\n');
+            ((Handle)children[i]).toStringBody(tab, builder);
+        }
     }
 }

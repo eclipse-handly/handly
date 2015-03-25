@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2014 IBM Corporation and others.
+ * Copyright (c) 2000, 2015 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -72,7 +72,7 @@ public class HandleDelta
     }
 
     @Override
-    public final IHandle getElement()
+    public IHandle getElement()
     {
         return element;
     }
@@ -90,37 +90,37 @@ public class HandleDelta
     }
 
     @Override
-    public final IHandleDelta[] getAffectedChildren()
+    public IHandleDelta[] getAffectedChildren()
     {
         return affectedChildren;
     }
 
     @Override
-    public final IHandleDelta[] getAddedChildren()
+    public IHandleDelta[] getAddedChildren()
     {
         return getChildrenOfType(ADDED);
     }
 
     @Override
-    public final IHandleDelta[] getRemovedChildren()
+    public IHandleDelta[] getRemovedChildren()
     {
         return getChildrenOfType(REMOVED);
     }
 
     @Override
-    public final IHandleDelta[] getChangedChildren()
+    public IHandleDelta[] getChangedChildren()
     {
         return getChildrenOfType(CHANGED);
     }
 
     @Override
-    public final IHandle getMovedFromElement()
+    public IHandle getMovedFromElement()
     {
         return movedFromElement;
     }
 
     @Override
-    public final IHandle getMovedToElement()
+    public IHandle getMovedToElement()
     {
         return movedToElement;
     }
@@ -650,18 +650,18 @@ public class HandleDelta
     protected boolean toDebugString(StringBuilder builder, int flags)
     {
         boolean prev = false;
-        if ((flags & IHandleDelta.F_CONTENT) != 0)
-        {
-            if (prev)
-                builder.append(" | "); //$NON-NLS-1$
-            builder.append("CONTENT"); //$NON-NLS-1$
-            prev = true;
-        }
         if ((flags & IHandleDelta.F_CHILDREN) != 0)
         {
             if (prev)
                 builder.append(" | "); //$NON-NLS-1$
             builder.append("CHILDREN"); //$NON-NLS-1$
+            prev = true;
+        }
+        if ((flags & IHandleDelta.F_CONTENT) != 0)
+        {
+            if (prev)
+                builder.append(" | "); //$NON-NLS-1$
+            builder.append("CONTENT"); //$NON-NLS-1$
             prev = true;
         }
         if ((flags & IHandleDelta.F_MOVED_FROM) != 0)

@@ -112,61 +112,65 @@ public class JavaProject
     @Override
     public IPackageFragment findPackageFragment(IResource resource)
     {
-        // In this example model, only folders can correspond to a package fragment
-        if (resource.getType() != IResource.FOLDER)
-            return null;
-
         if (!exists())
             return null;
-
-        IPath resourcePath = resource.getFullPath();
         try
         {
             IClasspathEntry[] rawClasspath = getRawClasspath();
-            for (IClasspathEntry entry : rawClasspath)
-            {
-                int entryKind = entry.getEntryKind();
-
-                // In this example model, only source folders are considered
-                if (entryKind != IClasspathEntry.CPE_SOURCE)
-                    continue;
-
-                IPath entryPath = entry.getPath();
-                if (entryPath.equals(resourcePath))
-                {
-                    PackageFragmentRoot root = getPackageFragmentRoot(resource);
-                    if (root == null)
-                        return null;
-                    return root.getPackageFragment(""); //$NON-NLS-1$
-                }
-                else if (entryPath.isPrefixOf(resourcePath))
-                {
-                    IResource rootFolder;
-                    if (entryPath.segmentCount() == 1)
-                        rootFolder = project;
-                    else
-                        rootFolder = project.getParent().getFolder(entryPath);
-
-                    PackageFragmentRoot root =
-                        getPackageFragmentRoot(rootFolder);
-                    if (root == null)
-                        return null;
-
-                    IPath packagePath =
-                        resourcePath.removeFirstSegments(entryPath.segmentCount());
-
-                    PackageFragment packageFragment =
-                        root.getPackageFragment(packagePath.segments());
-                    if (!packageFragment.isValidPackageName())
-                        return null;
-
-                    return packageFragment;
-                }
-            }
+            return findPackageFragment(resource, rawClasspath);
         }
         catch (CoreException e)
         {
             return null;
+        }
+    }
+
+    IPackageFragment findPackageFragment(IResource resource,
+        IClasspathEntry[] classpath)
+    {
+        // In this example model, only folders can correspond to a package fragment
+        if (resource.getType() != IResource.FOLDER)
+            return null;
+
+        IPath resourcePath = resource.getFullPath();
+        for (IClasspathEntry entry : classpath)
+        {
+            int entryKind = entry.getEntryKind();
+
+            // In this example model, only source folders are considered
+            if (entryKind != IClasspathEntry.CPE_SOURCE)
+                continue;
+
+            IPath entryPath = entry.getPath();
+            if (entryPath.equals(resourcePath))
+            {
+                PackageFragmentRoot root = getPackageFragmentRoot(resource);
+                if (root == null)
+                    return null;
+                return root.getPackageFragment(""); //$NON-NLS-1$
+            }
+            else if (entryPath.isPrefixOf(resourcePath))
+            {
+                IResource rootFolder;
+                if (entryPath.segmentCount() == 1)
+                    rootFolder = project;
+                else
+                    rootFolder = project.getParent().getFolder(entryPath);
+
+                PackageFragmentRoot root = getPackageFragmentRoot(rootFolder);
+                if (root == null)
+                    return null;
+
+                IPath packagePath =
+                    resourcePath.removeFirstSegments(entryPath.segmentCount());
+
+                PackageFragment packageFragment =
+                    root.getPackageFragment(packagePath.segments());
+                if (!packageFragment.isValidPackageName())
+                    return null;
+
+                return packageFragment;
+            }
         }
         return null;
     }
@@ -240,21 +244,82 @@ public class JavaProject
         return new JavaProjectBody();
     }
 
-    IClasspathEntry[] getRawClasspath() throws CoreException
+    PerProjectInfo getPerProjectInfo() throws CoreException
     {
-        // TODO Need to cache the result
-        return JavaCore.create(project).readRawClasspath();
+        return JavaModelManager.INSTANCE.getPerProjectInfoCheckExistence(project);
     }
 
-    String getOption(String optionName, boolean inheritJavaCoreOptions)
+    /**
+     * Returns the raw classpath for this project, as a list of classpath entries.
+     * 
+     * @return the raw classpath for this project, as a list of classpath entries
+     *  (never <code>null</code>)
+     * @throws CoreException if this element does not exist or if an
+     *  exception occurs while accessing its corresponding resource
+     * @see IClasspathEntry
+     */
+    public IClasspathEntry[] getRawClasspath() throws CoreException
+    {
+        return getPerProjectInfo().getRawClasspath();
+    }
+
+    /**
+     * Returns the output location for this project, as a workspace-relative
+     * absolute path.
+     * <p>
+     * The output location is where class files are generated (and resource
+     * files, copied).
+     * </p>
+     *
+     * @return the output location for this project, as a workspace-relative
+     *  absolute path (never <code>null</code>)
+     * @throws CoreException if this element does not exist or if an
+     *  exception occurs while accessing its corresponding resource
+     */
+    public IPath getOutputLocation() throws CoreException
+    {
+        return getPerProjectInfo().getOutputLocation();
+    }
+
+    void resetRawClasspath()
+    {
+        PerProjectInfo info =
+            JavaModelManager.INSTANCE.getPerProjectInfo(project, false);
+        if (info != null)
+            info.setRawClasspath(null, null);
+    }
+
+    /**
+     * Helper method for returning one option value only. Equivalent to
+     * <code>(String)this.getOptions(inheritJavaCoreOptions).get(optionName)</code>
+     * Note that it may answer <code>null</code> if this option does not exist,
+     * or if there is no custom value for it.
+     *
+     * @param optionName the name of the option
+     * @param inheritJavaCoreOptions indicates whether JavaCore options
+     *  should be inherited as well
+     * @return the String value of the given option, or <code>null</code> if none
+     */
+    public String getOption(String optionName, boolean inheritJavaCoreOptions)
     {
         // Cheat and delegate directly to JDT
         return JavaCore.create(project).getOption(optionName,
             inheritJavaCoreOptions);
     }
 
+    /**
+     * Returns the table of the current custom options for this project.
+     * Projects remember their custom options, in other words, only the options
+     * different from the the JavaCore global options for the workspace.
+     * A boolean argument allows to directly merge the project options
+     * with global ones from <code>JavaCore</code>.
+     *
+     * @param inheritJavaCoreOptions indicates whether JavaCore options
+     *  should be inherited as well
+     * @return table of current settings of all options (never <code>null</code>)
+     */
     @SuppressWarnings("unchecked")
-    Map<String, String> getOptions(boolean inheritJavaCoreOptions)
+    public Map<String, String> getOptions(boolean inheritJavaCoreOptions)
     {
         // Cheat and delegate directly to JDT
         return JavaCore.create(project).getOptions(inheritJavaCoreOptions);

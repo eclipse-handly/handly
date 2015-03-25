@@ -26,7 +26,7 @@ public interface IPackageFragment
     
     /**
      * Returns the compilation unit with the specified name in this package
-     * (for example, <code>"Object.java"</code>).
+     * (for example, <code>"Object.java"</code>). The name must end with ".java".
      * <p>
      * This is a handle-only method. The compilation unit may or may not exist.
      * </p>

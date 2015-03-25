@@ -98,8 +98,8 @@ class FooModelCache
         else if (handle instanceof IFooProject)
         {
             projectCache.remove(handle);
-            fileCache.resetSpaceLimit(
-                (int)(DEFAULT_FILE_SIZE * getMemoryRatio()), handle);
+            fileCache.resetSpaceLimit((int)(DEFAULT_FILE_SIZE * memoryRatio),
+                handle);
         }
         else if (handle instanceof IFooFile)
             fileCache.remove(handle);
@@ -108,7 +108,7 @@ class FooModelCache
     }
 
     /*
-     * Adapted from JavaModelCache#getMemoryRatio()
+     * Adapted from org.eclipse.jdt.internal.core.JavaModelCache#getMemoryRatio()
      */
     private double getMemoryRatio()
     {

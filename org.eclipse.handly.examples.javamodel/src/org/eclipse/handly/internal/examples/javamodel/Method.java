@@ -14,6 +14,8 @@ import java.util.Arrays;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.examples.javamodel.IMethod;
+import org.eclipse.handly.model.impl.Body;
+import org.eclipse.handly.model.impl.SourceElementBody;
 import org.eclipse.jdt.core.Signature;
 
 /**
@@ -115,5 +117,59 @@ public class Method
         if (result == null)
             return false;
         return result;
+    }
+
+    @Override
+    protected void toStringName(StringBuilder builder)
+    {
+        builder.append(getName());
+        builder.append('(');
+        String[] parameterTypes = getParameterTypes();
+        int length = parameterTypes.length;
+        for (int i = 0; i < length; i++)
+        {
+            String parameterType;
+            try
+            {
+                parameterType = Signature.toString(parameterTypes[i]);
+            }
+            catch (IllegalArgumentException e)
+            {
+                // signature is malformed
+                parameterType = "*** invalid signature: " + parameterTypes[i]; //$NON-NLS-1$
+            }
+            builder.append(parameterType);
+            if (i < length - 1)
+                builder.append(", "); //$NON-NLS-1$
+        }
+        builder.append(')');
+        int occurenceCount = getOccurenceCount();
+        if (occurenceCount > 1)
+        {
+            builder.append('#');
+            builder.append(occurenceCount);
+        }
+    }
+
+    @Override
+    protected void toStringBody(int tab, StringBuilder builder, Body body,
+        boolean showResolvedInfo)
+    {
+        builder.append(tabString(tab));
+        if (body != null)
+        {
+            SourceElementBody methodBody = (SourceElementBody)body;
+            String returnType = methodBody.get(RETURN_TYPE);
+            if (returnType != null)
+            {
+                builder.append(Signature.toString(returnType));
+                builder.append(' ');
+            }
+        }
+        toStringName(builder);
+        if (body == null)
+        {
+            builder.append(" (not open)"); //$NON-NLS-1$
+        }
     }
 }

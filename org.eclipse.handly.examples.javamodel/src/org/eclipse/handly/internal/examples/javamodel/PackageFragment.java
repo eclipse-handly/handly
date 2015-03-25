@@ -197,4 +197,29 @@ public class PackageFragment
         }
         body.setChildren(children.toArray(new IHandle[children.size()]));
     }
+
+    @Override
+    protected void toStringName(StringBuilder builder)
+    {
+        if (isDefaultPackage())
+            builder.append("<default>"); //$NON-NLS-1$
+        else
+            super.toStringName(builder);
+    }
+
+    @Override
+    protected void toStringBody(int tab, StringBuilder builder, Body body,
+        boolean showResolvedInfo)
+    {
+        super.toStringBody(tab, builder, body, showResolvedInfo);
+        if (body != null && tab > 0)
+            builder.append(" (...)"); //$NON-NLS-1$
+    }
+
+    @Override
+    protected void toStringChildren(int tab, StringBuilder builder, Body body)
+    {
+        if (tab == 0)
+            super.toStringChildren(tab, builder, body);
+    }
 }

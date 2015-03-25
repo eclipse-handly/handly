@@ -68,8 +68,7 @@ public class JavaModelCoreTest
 
     public void test003() throws Exception
     {
-        assertEquals(srcRoot.getPackageFragment(""),
-            JavaModelCore.create(srcFolder));
+        assertEquals(srcRoot, JavaModelCore.create(srcFolder));
 
         assertNull(JavaModelCore.create(project.getFolder("src-gen")));
 
@@ -107,9 +106,11 @@ public class JavaModelCoreTest
             srcRoot.getPackageFragment("foo").getCompilationUnit(
                 aFile.getName()), JavaModelCore.create(aFile));
 
+        assertNull(JavaModelCore.create(srcFolder.getFile("A")));
+
         try
         {
-            JavaModelCore.create(srcFolder.getFile("A"));
+            JavaModelCore.createCompilationUnitFrom(srcFolder.getFile("A"));
             fail();
         }
         catch (IllegalArgumentException e)

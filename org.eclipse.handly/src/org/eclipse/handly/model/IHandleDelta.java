@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2014 IBM Corporation and others.
+ * Copyright (c) 2000, 2015 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -180,6 +180,13 @@ public interface IHandleDelta
      * {
      *     // the delta indicates a content change
      * }</pre>
+     * <p>
+     * Some change flags are meaningful for most models and predefined
+     * in this interface, while others are model-specific and defined by
+     * the model implementor. The range for model-specific flags starts from
+     * <code>0x10000</code> and includes the upper 16 bits of <code>int</code>
+     * value. The lower 16 bits are reserved for predefined generic change flags.
+     * </p>
      * @return flags that describe how the element has changed
      */
     int getFlags();

@@ -14,7 +14,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.examples.javamodel.IField;
 import org.eclipse.handly.examples.javamodel.IMethod;
 import org.eclipse.handly.examples.javamodel.IType;
+import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Handle;
+import org.eclipse.handly.model.impl.SourceElementBody;
 import org.eclipse.jdt.core.Flags;
 
 /**
@@ -105,8 +107,7 @@ public class Type
     @Override
     public boolean isInterface() throws CoreException
     {
-        int flags = getFlags();
-        return Flags.isInterface(flags);
+        return Flags.isInterface(getFlags());
     }
 
     @Override
@@ -120,5 +121,30 @@ public class Type
     public boolean isMember()
     {
         return getDeclaringType() != null;
+    }
+
+    @Override
+    protected void toStringBody(int tab, StringBuilder builder, Body body,
+        boolean showResolvedInfo)
+    {
+        builder.append(tabString(tab));
+        if (body != null)
+        {
+            SourceElementBody typeBody = (SourceElementBody)body;
+            int flags = typeBody.get(FLAGS);
+            if (Flags.isEnum(flags))
+                builder.append("enum "); //$NON-NLS-1$
+            else if (Flags.isAnnotation(flags))
+                builder.append("@interface "); //$NON-NLS-1$
+            else if (Flags.isInterface(flags))
+                builder.append("interface "); //$NON-NLS-1$
+            else
+                builder.append("class "); //$NON-NLS-1$
+        }
+        toStringName(builder);
+        if (body == null)
+        {
+            builder.append(" (not open)"); //$NON-NLS-1$
+        }
     }
 }

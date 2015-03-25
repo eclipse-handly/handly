@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.eclipse.handly.internal.examples.javamodel;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ISaveContext;
@@ -44,9 +48,12 @@ public class JavaModelManager
      */
     public static final JavaModelManager INSTANCE = new JavaModelManager();
 
-    private IJavaModel javaModel;
+    private JavaModel javaModel;
     private HandleManager handleManager;
     private ListenerList listenerList;
+    private DeltaProcessingState deltaState;
+    private Map<IProject, PerProjectInfo> perProjectInfo =
+        new HashMap<IProject, PerProjectInfo>(5); // NOTE: this object itself is used as a lock to synchronize creation/removal of per project info
 
     public void startup() throws Exception
     {
@@ -57,6 +64,8 @@ public class JavaModelManager
             javaModel = new JavaModel(workspace);
             handleManager = new HandleManager(new JavaModelCache());
             listenerList = new ListenerList();
+            deltaState = new DeltaProcessingState();
+            deltaState.initialize();
 
             workspace.addResourceChangeListener(this,
                 IResourceChangeEvent.POST_CHANGE);
@@ -73,6 +82,7 @@ public class JavaModelManager
     public void shutdown() throws Exception
     {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        deltaState = null;
         listenerList = null;
         handleManager = null;
         javaModel = null;
@@ -83,7 +93,7 @@ public class JavaModelManager
     {
         if (event.getType() != IResourceChangeEvent.POST_CHANGE)
             return;
-        JavaDeltaProcessor deltaProcessor = new JavaDeltaProcessor();
+        DeltaProcessor deltaProcessor = new DeltaProcessor(deltaState);
         try
         {
             event.getDelta().accept(deltaProcessor);
@@ -92,10 +102,15 @@ public class JavaModelManager
         {
             Activator.log(e.getStatus());
         }
-        if (!deltaProcessor.getDelta().isEmpty())
+        finally
+        {
+            deltaState.reset();
+        }
+        JavaElementDelta delta = deltaProcessor.getDelta();
+        if (!delta.isEmpty())
         {
             fireElementChangeEvent(new ElementChangeEvent(
-                ElementChangeEvent.POST_CHANGE, deltaProcessor.getDelta()));
+                ElementChangeEvent.POST_CHANGE, delta));
         }
     }
 
@@ -146,6 +161,61 @@ public class JavaModelManager
                     ((IElementChangeListener)listener).elementChanged(event);
                 }
             });
+        }
+    }
+
+    /**
+     * Returns the per-project info for the given project.
+     * If specified, create the info if the info doesn't exist.
+     * <p>
+     * Note that no check is done at this time on the existence
+     * or the nature of this project.
+     * </p>
+     * 
+     * @param project the given project
+     * @param create indicates whether to create the info if it doesn't exist
+     * @return the per-project info for the given project, or <code>null</code>
+     *  if the info doesn't exist and <code>create == false</code>
+     */
+    public PerProjectInfo getPerProjectInfo(IProject project, boolean create)
+    {
+        synchronized (perProjectInfo)
+        {
+            PerProjectInfo info = perProjectInfo.get(project);
+            if (info == null && create)
+            {
+                info = new PerProjectInfo(project);
+                perProjectInfo.put(project, info);
+            }
+            return info;
+        }
+    }
+
+    /**
+     * Returns the per-project info for the given project. If the info
+     * doesn't exist, check for the project existence and create the info.
+
+     * @param project the given project
+     * @return the per-project info for the given project (never <code>null</code>)
+     * @throws CoreException if the Java project doesn't exist
+     */
+    public PerProjectInfo getPerProjectInfoCheckExistence(IProject project)
+        throws CoreException
+    {
+        PerProjectInfo info = getPerProjectInfo(project, false);
+        if (info == null)
+        {
+            new JavaProject(javaModel, project).validateExistence();
+            info = getPerProjectInfo(project, true);
+        }
+        return info;
+    }
+
+    public void removePerProjectInfo(IProject project)
+    {
+        synchronized (perProjectInfo)
+        {
+            perProjectInfo.remove(project);
         }
     }
 

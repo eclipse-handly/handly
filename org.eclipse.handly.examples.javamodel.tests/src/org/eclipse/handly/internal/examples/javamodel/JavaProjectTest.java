@@ -176,6 +176,37 @@ public class JavaProjectTest
         assertTrue(Arrays.asList(nonJavaResources).contains(classpathFile));
         assertTrue(Arrays.asList(nonJavaResources).contains(binFolder));
 
+        // delete src-gen (again)
+        srcGenRoot.getResource().delete(true, null);
+
+        roots = javaProject.getPackageFragmentRoots();
+        assertEquals(1, roots.length);
+        assertEquals(srcRoot, roots[0]);
+        assertTrue(srcRoot.exists());
+        assertFalse(srcGenRoot.exists());
+
+        nonJavaResources = javaProject.getNonJavaResources();
+        assertEquals(3, nonJavaResources.length);
+        assertTrue(Arrays.asList(nonJavaResources).contains(projectFile));
+        assertTrue(Arrays.asList(nonJavaResources).contains(classpathFile));
+        assertTrue(Arrays.asList(nonJavaResources).contains(binFolder));
+
+        // (re-)create src-gen and check it is still the first entry
+        ((IFolder)srcGenRoot.getResource()).create(true, true, null);
+
+        roots = javaProject.getPackageFragmentRoots();
+        assertEquals(2, roots.length);
+        assertEquals(srcGenRoot, roots[0]);
+        assertEquals(srcRoot, roots[1]);
+        assertTrue(srcGenRoot.exists());
+        assertTrue(srcRoot.exists());
+
+        nonJavaResources = javaProject.getNonJavaResources();
+        assertEquals(3, nonJavaResources.length);
+        assertTrue(Arrays.asList(nonJavaResources).contains(projectFile));
+        assertTrue(Arrays.asList(nonJavaResources).contains(classpathFile));
+        assertTrue(Arrays.asList(nonJavaResources).contains(binFolder));
+
         // move src-gen
         IFolder otherFolder = project.getFolder("src-gen2");
         srcGenRoot.getResource().move(otherFolder.getFullPath(), true, null);
