@@ -23,9 +23,11 @@ import org.eclipse.handly.examples.javamodel.IPackageDeclaration;
 import org.eclipse.handly.examples.javamodel.IType;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.impl.Body;
+import org.eclipse.handly.model.impl.ElementChangeEvent;
 import org.eclipse.handly.model.impl.HandleManager;
 import org.eclipse.handly.model.impl.SourceElementBody;
 import org.eclipse.handly.model.impl.SourceFile;
+import org.eclipse.handly.snapshot.NonExpiringSnapshot;
 import org.eclipse.jdt.core.JavaConventions;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
@@ -115,6 +117,12 @@ public class CompilationUnit
     }
 
     @Override
+    public ReconcileOperation getReconcileOperation()
+    {
+        return new NotifyingReconcileOperation();
+    }
+
+    @Override
     protected HandleManager getHandleManager()
     {
         return JavaModelManager.INSTANCE.getHandleManager();
@@ -161,5 +169,42 @@ public class CompilationUnit
             new CompilatonUnitStructureBuilder(newElements);
         builder.buildStructure(this, body,
             (org.eclipse.jdt.core.dom.CompilationUnit)ast);
+    }
+
+    @Override
+    protected void workingCopyModeChanged()
+    {
+        super.workingCopyModeChanged();
+
+        JavaElementDelta delta = new JavaElementDelta(getRoot());
+        if (file.exists())
+            delta.insertChanged(this, JavaElementDelta.F_WORKING_COPY);
+        else
+            delta.insertAdded(this, JavaElementDelta.F_WORKING_COPY);
+        JavaModelManager.INSTANCE.fireElementChangeEvent(new ElementChangeEvent(
+            ElementChangeEvent.POST_CHANGE, delta));
+    }
+
+    private class NotifyingReconcileOperation
+        extends ReconcileOperation
+    {
+        @Override
+        public void reconcile(Object ast, NonExpiringSnapshot snapshot,
+            boolean forced) throws CoreException
+        {
+            JavaElementDeltaBuilder deltaBuilder =
+                new JavaElementDeltaBuilder(CompilationUnit.this);
+
+            super.reconcile(ast, snapshot, forced);
+
+            deltaBuilder.buildDelta();
+
+            JavaElementDelta delta = deltaBuilder.getDelta();
+            if (!delta.isEmpty())
+            {
+                JavaModelManager.INSTANCE.fireElementChangeEvent(new ElementChangeEvent(
+                    ElementChangeEvent.POST_RECONCILE, delta));
+            }
+        }
     }
 }

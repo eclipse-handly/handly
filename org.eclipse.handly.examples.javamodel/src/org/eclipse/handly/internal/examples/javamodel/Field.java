@@ -61,7 +61,7 @@ public class Field
         boolean showResolvedInfo)
     {
         builder.append(tabString(tab));
-        if (body != null)
+        if (body != null && body != NO_BODY)
         {
             SourceElementBody fieldBody = (SourceElementBody)body;
             String type = fieldBody.get(TYPE);

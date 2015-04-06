@@ -128,7 +128,7 @@ public class Type
         boolean showResolvedInfo)
     {
         builder.append(tabString(tab));
-        if (body != null)
+        if (body != null && body != NO_BODY)
         {
             SourceElementBody typeBody = (SourceElementBody)body;
             int flags = typeBody.get(FLAGS);

@@ -34,6 +34,12 @@ public class JavaElementDeltaBuilder
     }
 
     @Override
+    public JavaElementDelta getDelta()
+    {
+        return (JavaElementDelta)super.getDelta();
+    }
+
+    @Override
     protected HandleDelta newDelta(IHandle element)
     {
         return new JavaElementDelta((IJavaElement)element);

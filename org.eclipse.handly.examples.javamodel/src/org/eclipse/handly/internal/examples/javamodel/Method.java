@@ -156,7 +156,7 @@ public class Method
         boolean showResolvedInfo)
     {
         builder.append(tabString(tab));
-        if (body != null)
+        if (body != null && body != NO_BODY)
         {
             SourceElementBody methodBody = (SourceElementBody)body;
             String returnType = methodBody.get(RETURN_TYPE);

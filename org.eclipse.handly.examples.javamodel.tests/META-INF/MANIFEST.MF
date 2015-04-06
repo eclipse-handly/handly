@@ -6,5 +6,6 @@ Bundle-Name: Handly Java Model Example Tests (Incubation)
 Bundle-Vendor: Eclipse Handly
 Fragment-Host: org.eclipse.handly.examples.javamodel
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.eclipse.handly.junit
+Require-Bundle: org.eclipse.handly.junit,
+ org.eclipse.text
 Import-Package: junit.framework

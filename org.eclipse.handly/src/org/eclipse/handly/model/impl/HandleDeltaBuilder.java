@@ -87,7 +87,7 @@ public class HandleDeltaBuilder
      * Builds the delta tree between the old content of the element and its 
      * new content. This method may only be called once on a given builder.
      */
-    public final void buildDelta()
+    public void buildDelta()
     {
         delta = newDelta(element);
         recordNewPositions(element, 0);
@@ -103,7 +103,7 @@ public class HandleDeltaBuilder
      * 
      * @return the built delta, or <code>null</code> if the delta has not been built
      */
-    public final HandleDelta getDelta()
+    public HandleDelta getDelta()
     {
         return delta;
     }
