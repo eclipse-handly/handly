@@ -300,15 +300,33 @@ public abstract class SourceFile
             // NOTE: AST is created from the underlying file contents, 
             // not from the buffer contents, since source files that are not 
             // working copies must reflect the structure of the underlying file
-            NonExpiringSnapshot snapshot =
-                new NonExpiringSnapshot(new ISnapshotProvider()
+            NonExpiringSnapshot snapshot;
+            try
+            {
+                snapshot = new NonExpiringSnapshot(new ISnapshotProvider()
                 {
                     @Override
                     public ISnapshot getSnapshot()
                     {
-                        return new TextFileSnapshot(getFile());
+                        TextFileSnapshot result =
+                            new TextFileSnapshot(getFile(), true);
+                        if (result.getContents() == null
+                            && !result.getStatus().isOK())
+                        {
+                            throw new IllegalStateException(
+                                new CoreException(result.getStatus()));
+                        }
+                        return result;
                     }
                 });
+            }
+            catch (IllegalStateException e)
+            {
+                Throwable cause = e.getCause();
+                if (cause instanceof CoreException)
+                    throw (CoreException)cause;
+                throw new AssertionError(e); // should never happen
+            }
             Object ast = createStructuralAst(snapshot.getContents());
             astHolder = new AstHolder(ast, snapshot);
         }

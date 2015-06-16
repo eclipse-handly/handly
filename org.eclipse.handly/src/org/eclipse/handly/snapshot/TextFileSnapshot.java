@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,11 +17,14 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.handly.internal.Activator;
 
 /**
- * A snapshot of a text file. Thread-safe. 
+ * A snapshot of a text file in the workspace. Thread-safe.
  */
 public final class TextFileSnapshot
     extends Snapshot
@@ -30,19 +33,37 @@ public final class TextFileSnapshot
     private static final char[] EMPTY_CHAR_ARRAY = new char[0];
 
     private final IFile file;
+    private final boolean local;
     private final long modificationStamp;
     private Reference<String> contents;
-    private volatile boolean readError;
+    private volatile IStatus status = Status.OK_STATUS;
 
     /**
-     * Takes a snapshot of the given text file.
+     * Takes a snapshot of the given text file in the workspace,
+     * using workspace contents (as opposed to the contents of
+     * the local file system).
      * 
      * @param file must not be <code>null</code>
      */
     public TextFileSnapshot(IFile file)
     {
+        this(file, false);
+    }
+
+    /**
+     * Takes a snapshot of the given text file in the workspace, using either
+     * workspace contents or the contents of the local file system according
+     * to the <code>local</code> flag.
+     *
+     * @param file must not be <code>null</code>
+     * @param local whether the contents of the local file system
+     *  (as opposed to workspace contents) should be used
+     */
+    public TextFileSnapshot(IFile file, boolean local)
+    {
         this.file = file;
-        this.modificationStamp = file.getModificationStamp();
+        this.local = local;
+        this.modificationStamp = getFileModificationStamp();
     }
 
     @Override
@@ -68,10 +89,15 @@ public final class TextFileSnapshot
             catch (CoreException e)
             {
                 Activator.log(e.getStatus());
-                readError = true;
+                status = e.getStatus();
             }
         }
         return result;
+    }
+
+    public IStatus getStatus()
+    {
+        return status;
     }
 
     @Override
@@ -82,11 +108,12 @@ public final class TextFileSnapshot
 
         if (other instanceof TextFileSnapshot)
         {
-            if (!((TextFileSnapshot)other).isSynchronized())
+            TextFileSnapshot otherSnapshot = (TextFileSnapshot)other;
+            if (!otherSnapshot.isSynchronized())
                 return false;
 
-            if (file.equals(((TextFileSnapshot)other).file)
-                && modificationStamp == ((TextFileSnapshot)other).modificationStamp)
+            if (file.equals(otherSnapshot.file) && local == otherSnapshot.local
+                && modificationStamp == otherSnapshot.modificationStamp)
                 return true;
         }
 
@@ -95,7 +122,18 @@ public final class TextFileSnapshot
 
     private boolean isSynchronized()
     {
-        return modificationStamp == file.getModificationStamp() && !readError;
+        return modificationStamp == getFileModificationStamp() && status.isOK();
+    }
+
+    private long getFileModificationStamp()
+    {
+        if (!file.exists())
+            return IResource.NULL_STAMP;
+
+        if (!local)
+            return file.getModificationStamp();
+        else
+            return file.getLocation().toFile().lastModified();
     }
 
     private String readContents() throws CoreException
@@ -115,7 +153,7 @@ public final class TextFileSnapshot
 
         try
         {
-            InputStream stream = file.getContents(false);
+            InputStream stream = file.getContents(local);
             try
             {
                 InputStreamReader reader =
