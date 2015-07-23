@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     Vladimir Piskarev (1C) - initial API and implementation
+ *     Mike Begletsov -<begletsov.mihail@gmail.com> - Widget is disposed for outline tree - https://bugs.eclipse.org/473296
  *******************************************************************************/
 package org.eclipse.handly.ui.outline;
 
@@ -90,7 +91,9 @@ public abstract class OutlineSorterContribution
         if (preference != null)
         {
             preference.removeListener(preferenceListener);
-            getOutlinePage().getTreeViewer().setComparator(oldComparator);
+            TreeViewer treeViewer = getOutlinePage().getTreeViewer();
+            if (!treeViewer.getControl().isDisposed())
+                treeViewer.setComparator(oldComparator);
             preference = null;
         }
         super.dispose();
