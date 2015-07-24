@@ -18,7 +18,6 @@ import org.eclipse.handly.model.ISourceElement;
 import org.eclipse.handly.model.ISourceElementInfo;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Handle;
-import org.eclipse.handly.model.impl.SourceElement;
 import org.eclipse.handly.model.impl.SourceElementBody;
 import org.eclipse.handly.snapshot.ISnapshot;
 import org.eclipse.handly.util.TextRange;
@@ -171,8 +170,7 @@ public class Type
             }
             else
             {
-                ISourceElement found = ((SourceElement)child).doGetElementAt(
-                    position, snapshot);
+                ISourceElement found = child.getElementAt(position, snapshot);
                 if (found != null)
                     return found;
             }

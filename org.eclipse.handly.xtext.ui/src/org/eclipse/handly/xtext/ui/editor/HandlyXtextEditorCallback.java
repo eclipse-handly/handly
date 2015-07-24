@@ -291,9 +291,17 @@ public class HandlyXtextEditorCallback
                     }
                     if (monitor.isCanceled())
                         return Status.CANCEL_STATUS;
-                    selectedElement = sourceFile.getElementAt(position, null);
-                    if (sourceFile.equals(selectedElement))
+                    try
+                    {
+                        selectedElement = sourceFile.getElementAt(position,
+                            null);
+                        if (sourceFile.equals(selectedElement))
+                            selectedElement = null;
+                    }
+                    catch (CoreException e)
+                    {
                         selectedElement = null;
+                    }
                 }
             }
             if (monitor.isCanceled())

@@ -14,9 +14,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.handly.internal.ui.SourceElementUtil;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.ISourceElement;
+import org.eclipse.handly.model.SourceElements;
 import org.eclipse.handly.model.adapter.IContentAdapter;
 import org.eclipse.handly.model.adapter.IContentAdapterProvider;
 import org.eclipse.handly.model.adapter.NullContentAdapter;
@@ -108,8 +108,8 @@ public class SourceElementLinkingHelper
         ISourceElement sourceElement = (ISourceElement)element;
         if (!isInEditor(sourceElement, editor))
             return;
-        TextRange identifyingRange = SourceElementUtil.getIdentifyingRange(
-            sourceElement);
+        TextRange identifyingRange = SourceElements.getSourceElementInfo(
+            sourceElement).getIdentifyingRange();
         if (identifyingRange == null)
             return;
         editor.selectAndReveal(identifyingRange.getOffset(),
@@ -156,9 +156,12 @@ public class SourceElementLinkingHelper
             getOutlinePage().getTreeViewer().getInput());
         if (!(input instanceof ISourceElement))
             return null;
+        ISourceElement sourceElement = (ISourceElement)input;
+        if (!SourceElements.ensureReconciled(sourceElement))
+            return null;
         Object element = getContentAdapter().getCorrespondingElement(
-            SourceElementUtil.getElementAt((ISourceElement)input,
-                selection.getOffset()));
+            SourceElements.getElementAt(sourceElement, selection.getOffset(),
+                null));
         if (element == null)
             return null;
         return new StructuredSelection(element);

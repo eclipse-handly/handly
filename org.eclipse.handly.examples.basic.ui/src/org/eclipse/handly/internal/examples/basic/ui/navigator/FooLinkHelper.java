@@ -15,8 +15,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.handly.examples.basic.ui.model.FooModelCore;
 import org.eclipse.handly.examples.basic.ui.model.IFooElement;
 import org.eclipse.handly.examples.basic.ui.model.IFooFile;
-import org.eclipse.handly.internal.examples.basic.ui.SourceElementUtil;
 import org.eclipse.handly.model.ISourceElement;
+import org.eclipse.handly.model.SourceElements;
+import org.eclipse.handly.util.TextRange;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IEditorInput;
@@ -109,8 +110,12 @@ public class FooLinkHelper
     {
         if (editor instanceof ITextEditor && element instanceof ISourceElement)
         {
-            SourceElementUtil.revealInTextEditor((ITextEditor)editor,
-                (ISourceElement)element);
+            TextRange identifyingRange = SourceElements.getSourceElementInfo(
+                (ISourceElement)element).getIdentifyingRange();
+            if (identifyingRange == null)
+                return;
+            ((ITextEditor)editor).selectAndReveal(identifyingRange.getOffset(),
+                identifyingRange.getLength());
         }
     }
 }

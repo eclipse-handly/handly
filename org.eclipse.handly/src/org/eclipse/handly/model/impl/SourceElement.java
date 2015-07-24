@@ -42,47 +42,13 @@ public abstract class SourceElement
     }
 
     @Override
-    public final ISourceElement getElementAt(int position, ISnapshot base)
-    {
-        try
-        {
-            return doGetElementAt(position, base);
-        }
-        catch (CoreException e)
-        {
-            // ignore
-        }
-        catch (StaleSnapshotException e)
-        {
-            // ignore
-        }
-        return null;
-    }
-
-    @Override
     public ISourceElementInfo getSourceElementInfo() throws CoreException
     {
         return (ISourceElementInfo)getBody();
     }
 
-    /**
-     * Returns the smallest element within this element that includes
-     * the given source position, or <code>null</code> if the given position
-     * is not within the source range of this element. If no finer grained
-     * element is found at the position, this element itself is returned.
-     *
-     * @param position a source position (0-based)
-     * @param base a snapshot on which the given position is based,
-     *  or <code>null</code> if the snapshot is unknown or doesn't matter
-     * @return the innermost element enclosing the given source position,
-     *  or <code>null</code> if none (including this element itself)
-     * @throws CoreException if this element does not exist or if an
-     *  exception occurs while accessing its corresponding resource
-     * @throws StaleSnapshotException if snapshot inconsistency is detected,
-     *  i.e. this element's current structure and properties are based on
-     *  a different snapshot
-     */
-    public ISourceElement doGetElementAt(int position, ISnapshot base)
+    @Override
+    public ISourceElement getElementAt(int position, ISnapshot base)
         throws CoreException
     {
         ISourceElementInfo info = getSourceElementInfo();
@@ -137,8 +103,7 @@ public abstract class SourceElement
         ISourceElement[] children = info.getChildren();
         for (ISourceElement child : children)
         {
-            ISourceElement found = ((SourceElement)child).doGetElementAt(
-                position, snapshot);
+            ISourceElement found = child.getElementAt(position, snapshot);
             if (found != null)
                 return found;
         }

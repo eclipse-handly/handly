@@ -18,12 +18,13 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.handly.examples.basic.ui.model.FooModelCore;
 import org.eclipse.handly.internal.examples.basic.ui.FooContentProvider;
 import org.eclipse.handly.internal.examples.basic.ui.FooLabelProvider;
-import org.eclipse.handly.internal.examples.basic.ui.SourceElementUtil;
 import org.eclipse.handly.model.IElementChangeEvent;
 import org.eclipse.handly.model.IElementChangeListener;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.IHandleDelta;
 import org.eclipse.handly.model.ISourceElement;
+import org.eclipse.handly.model.SourceElements;
+import org.eclipse.handly.util.TextRange;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -246,8 +247,12 @@ public final class FooOutlinePage
                 ((IStructuredSelection)selection).getFirstElement();
             if (!(element instanceof ISourceElement))
                 return;
-            SourceElementUtil.revealInTextEditor(editor,
-                (ISourceElement)element);
+            TextRange identifyingRange = SourceElements.getSourceElementInfo(
+                (ISourceElement)element).getIdentifyingRange();
+            if (identifyingRange == null)
+                return;
+            editor.selectAndReveal(identifyingRange.getOffset(),
+                identifyingRange.getLength());
         }
 
         protected void linkToOutline(ISelection selection)
@@ -297,8 +302,10 @@ public final class FooOutlinePage
                 Object input = treeViewer.getInput();
                 if (!(input instanceof ISourceElement))
                     return Status.OK_STATUS;
-                final ISourceElement element = SourceElementUtil.getElementAt(
-                    (ISourceElement)input, baseSelection.getOffset()); // reconciles the source file as a side effect
+                if (!SourceElements.ensureReconciled((ISourceElement)input))
+                    return Status.OK_STATUS;
+                final ISourceElement element = SourceElements.getElementAt(
+                    (ISourceElement)input, baseSelection.getOffset(), null);
                 if (element == null)
                     return Status.OK_STATUS;
                 if (monitor.isCanceled())

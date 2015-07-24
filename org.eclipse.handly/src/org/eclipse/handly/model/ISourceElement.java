@@ -12,6 +12,7 @@ package org.eclipse.handly.model;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.snapshot.ISnapshot;
+import org.eclipse.handly.snapshot.StaleSnapshotException;
 
 /**
  * Common protocol for elements that may have associated source code.
@@ -26,18 +27,22 @@ public interface ISourceElement
     /**
      * Returns the smallest element within this element that includes
      * the given source position, or <code>null</code> if the given position
-     * is not within the source range of this element, or if this element does not
-     * exist or an exception occurs while accessing its corresponding resource,
-     * or if snapshot inconsistency is detected. If no finer grained element
-     * is found at the position, this element itself is returned.
+     * is not within the source range of this element. If no finer grained
+     * element is found at the position, this element itself is returned.
      *
      * @param position a source position (0-based)
      * @param base a snapshot on which the given position is based,
      *  or <code>null</code> if the snapshot is unknown or doesn't matter
      * @return the innermost element enclosing the given source position,
      *  or <code>null</code> if none (including this element itself)
+     * @throws CoreException if this element does not exist or if an
+     *  exception occurs while accessing its corresponding resource
+     * @throws StaleSnapshotException if snapshot inconsistency is detected,
+     *  i.e. this element's current structure and properties are based on
+     *  a different snapshot
      */
-    ISourceElement getElementAt(int position, ISnapshot base);
+    ISourceElement getElementAt(int position, ISnapshot base)
+        throws CoreException;
 
     /**
      * Returns an object holding cached structure and properties for this element.

@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.handly.ui.quickoutline;
 
-import org.eclipse.handly.internal.ui.SourceElementUtil;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.ISourceElement;
+import org.eclipse.handly.model.SourceElements;
 import org.eclipse.handly.model.adapter.IContentAdapter;
 import org.eclipse.handly.model.adapter.IContentAdapterProvider;
 import org.eclipse.handly.model.adapter.NullContentAdapter;
@@ -78,9 +78,12 @@ public abstract class HandlyOutlinePopup
             getTreeViewer().getInput());
         if (!(input instanceof ISourceElement))
             return null;
+        ISourceElement sourceElement = (ISourceElement)input;
+        if (!SourceElements.ensureReconciled(sourceElement))
+            return null;
         return getContentAdapter().getCorrespondingElement(
-            SourceElementUtil.getElementAt((ISourceElement)input,
-                ((ITextSelection)hostSelection).getOffset()));
+            SourceElements.getElementAt(sourceElement,
+                ((ITextSelection)hostSelection).getOffset(), null));
     }
 
     @Override
@@ -92,8 +95,8 @@ public abstract class HandlyOutlinePopup
         ISourceElement sourceElement = (ISourceElement)element;
         if (!isInHost(sourceElement))
             return false;
-        TextRange identifyingRange = SourceElementUtil.getIdentifyingRange(
-            sourceElement);
+        TextRange identifyingRange = SourceElements.getSourceElementInfo(
+            sourceElement).getIdentifyingRange();
         if (identifyingRange == null)
             return false;
         TextSelection textSelection = new TextSelection(
