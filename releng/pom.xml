@@ -263,5 +263,40 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>generate-javadoc</id>
+      <properties>
+        <javadoc.title>Eclipse Handly (Incubation) ${project.version} API.</javadoc.title>
+        <javadoc.copyright>Copyright &#169; {currentYear} 1C-Soft LLC. All rights reserved.</javadoc.copyright>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.10.3</version>
+            <configuration>
+              <!-- Default configuration for all reports -->
+              <windowtitle>${javadoc.title}</windowtitle>
+              <doctitle>${javadoc.title}</doctitle>
+              <excludePackageNames>*.internal</excludePackageNames>
+              <bottom>${javadoc.copyright}</bottom>
+            </configuration>
+            <executions>
+              <execution>
+                <id>aggregate</id>
+                <goals>
+                  <goal>aggregate</goal>
+                </goals>
+                <phase>install</phase> <!-- force execution on 'install' phase -->
+                <configuration>
+                  <!-- Specific configuration for the aggregate report -->
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
