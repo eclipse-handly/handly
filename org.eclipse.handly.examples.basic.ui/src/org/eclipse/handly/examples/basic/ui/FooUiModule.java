@@ -11,10 +11,10 @@
 package org.eclipse.handly.examples.basic.ui;
 
 import org.eclipse.handly.examples.basic.ui.internal.FooActivator;
-import org.eclipse.handly.internal.examples.basic.ui.FooElementForEditorInputFactory;
+import org.eclipse.handly.internal.examples.basic.ui.FooInputElementProvider;
 import org.eclipse.handly.internal.examples.basic.ui.outline2.FooOutlinePage;
 import org.eclipse.handly.internal.examples.basic.ui.outline2.FooOutlinePopup;
-import org.eclipse.handly.ui.IElementForEditorInputFactory;
+import org.eclipse.handly.ui.IInputElementProvider;
 import org.eclipse.handly.ui.quickoutline.OutlinePopup;
 import org.eclipse.handly.xtext.ui.editor.HandlyDirtyStateEditorSupport;
 import org.eclipse.handly.xtext.ui.editor.HandlyXtextDocument;
@@ -44,9 +44,9 @@ public class FooUiModule
         super(plugin);
     }
 
-    public Class<? extends IElementForEditorInputFactory> bindIElementForEditorInputFactory()
+    public Class<? extends IInputElementProvider> bindIInputElementProvider()
     {
-        return FooElementForEditorInputFactory.class;
+        return FooInputElementProvider.class;
     }
 
     @Override

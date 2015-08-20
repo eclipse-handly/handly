@@ -8,27 +8,40 @@
  * Contributors:
  *     Vladimir Piskarev (1C) - initial API and implementation
  *******************************************************************************/
-package org.eclipse.handly.internal.examples.basic.ui;
+package org.eclipse.handly.internal.examples.adapter.ui;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.handly.examples.basic.ui.model.FooModelCore;
 import org.eclipse.handly.model.IHandle;
-import org.eclipse.handly.ui.IElementForEditorInputFactory;
+import org.eclipse.handly.ui.IInputElementProvider;
+import org.eclipse.handly.util.AdapterUtil;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.IEditorInput;
 
 /**
- * Implementation of {@link IElementForEditorInputFactory} to be bound
- * in the Xtext UI module for the language.
+ * Returns <code>IHandle</code> corresponding to the compilation unit
+ * underlying the given editor input.
  */
-public class FooElementForEditorInputFactory
-    implements IElementForEditorInputFactory
+public class JavaInputElementProvider
+    implements IInputElementProvider
 {
+    /**
+     * The sole instance of the {@link JavaInputElementProvider}.
+     */
+    public static final IInputElementProvider INSTANCE =
+        new JavaInputElementProvider();
+
     @Override
     public IHandle getElement(IEditorInput input)
     {
         if (input == null)
             return null;
         IFile file = (IFile)input.getAdapter(IFile.class);
-        return FooModelCore.create(file);
+        ICompilationUnit cu = JavaCore.createCompilationUnitFrom(file);
+        return AdapterUtil.getAdapter(cu, IHandle.class, true);
+    }
+
+    private JavaInputElementProvider()
+    {
     }
 }

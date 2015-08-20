@@ -20,7 +20,7 @@ import org.eclipse.handly.model.SourceElements;
 import org.eclipse.handly.model.adapter.IContentAdapter;
 import org.eclipse.handly.model.adapter.IContentAdapterProvider;
 import org.eclipse.handly.model.adapter.NullContentAdapter;
-import org.eclipse.handly.ui.IElementForEditorInputFactory;
+import org.eclipse.handly.ui.IInputElementProvider;
 import org.eclipse.handly.util.TextRange;
 import org.eclipse.jface.dialogs.IPageChangeProvider;
 import org.eclipse.jface.text.ITextSelection;
@@ -39,7 +39,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 public class SourceElementLinkingHelper
     extends OutlineLinkingHelper
 {
-    protected final IElementForEditorInputFactory inputElementFactory;
+    protected final IInputElementProvider inputElementProvider;
     private LinkToOutlineJob linkToOutlineJob = new LinkToOutlineJob();
 
     /**
@@ -47,13 +47,13 @@ public class SourceElementLinkingHelper
      * that is based on <code>ISourceElement</code>.
      *
      * @param outlinePage not <code>null</code>
-     * @param factory {@link IElementForEditorInputFactory}
+     * @param provider {@link IInputElementProvider}
      */
     public SourceElementLinkingHelper(ICommonOutlinePage outlinePage,
-        IElementForEditorInputFactory factory)
+        IInputElementProvider provider)
     {
         super(outlinePage);
-        inputElementFactory = factory;
+        inputElementProvider = provider;
     }
 
     @Override
@@ -204,7 +204,7 @@ public class SourceElementLinkingHelper
      */
     protected boolean isInEditor(IHandle element, IEditorPart editor)
     {
-        IHandle inputElement = inputElementFactory.getElement(
+        IHandle inputElement = inputElementProvider.getElement(
             editor.getEditorInput());
         while (element != null)
         {

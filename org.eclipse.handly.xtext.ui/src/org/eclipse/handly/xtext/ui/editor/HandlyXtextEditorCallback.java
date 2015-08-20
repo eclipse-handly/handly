@@ -24,7 +24,7 @@ import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.ISourceElement;
 import org.eclipse.handly.model.ISourceFile;
 import org.eclipse.handly.model.impl.SourceFile;
-import org.eclipse.handly.ui.IElementForEditorInputFactory;
+import org.eclipse.handly.ui.IInputElementProvider;
 import org.eclipse.handly.ui.texteditor.TextEditorBuffer;
 import org.eclipse.handly.util.TextRange;
 import org.eclipse.jface.text.ITextSelection;
@@ -48,14 +48,14 @@ import com.google.inject.Inject;
  * sets the editor highlight range for the currently selected element.
  * <p>
  * Note that this class relies on a language-specific implementation of
- * {@link IElementForEditorInputFactory} being available through injection.
+ * {@link IInputElementProvider} being available through injection.
  * </p>
  */
 public class HandlyXtextEditorCallback
     extends IXtextEditorCallback.NullImpl
 {
     @Inject(optional = true)
-    private IElementForEditorInputFactory inputElementFactory;
+    private IInputElementProvider inputElementProvider;
     @Inject(optional = true)
     @SuppressWarnings("deprecation")
     private org.eclipse.handly.model.ISourceFileFactory sourceFileFactory;
@@ -70,13 +70,13 @@ public class HandlyXtextEditorCallback
     @Inject
     void init()
     {
-        if (inputElementFactory == null)
+        if (inputElementProvider == null)
         {
             if (sourceFileFactory == null)
                 throw new AssertionError(
-                    "No implementation for IElementForEditorInputFactory or ISourceFileFactory was bound"); //$NON-NLS-1$
+                    "No implementation for IInputElementProvider or ISourceFileFactory was bound"); //$NON-NLS-1$
 
-            inputElementFactory = new IElementForEditorInputFactory()
+            inputElementProvider = new IInputElementProvider()
             {
                 @Override
                 public IHandle getElement(IEditorInput input)
@@ -141,7 +141,7 @@ public class HandlyXtextEditorCallback
 
     protected SourceFile getSourceFile(XtextEditor editor)
     {
-        IHandle inputElement = inputElementFactory.getElement(
+        IHandle inputElement = inputElementProvider.getElement(
             editor.getEditorInput());
         if (!(inputElement instanceof SourceFile))
             return null;

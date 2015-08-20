@@ -16,7 +16,7 @@ import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.adapter.IContentAdapter;
 import org.eclipse.handly.model.adapter.IContentAdapterProvider;
 import org.eclipse.handly.model.adapter.NullContentAdapter;
-import org.eclipse.handly.ui.IElementForEditorInputFactory;
+import org.eclipse.handly.ui.IInputElementProvider;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.OpenAndLinkWithEditorHelper;
 import org.eclipse.ui.PlatformUI;
@@ -30,19 +30,19 @@ public abstract class HandlyOutlinePage
     extends CommonOutlinePage
     implements IContentAdapterProvider
 {
-    private IElementForEditorInputFactory inputElementFactory;
+    private IInputElementProvider inputElementProvider;
 
     /**
-     * Sets the input element factory.
+     * Sets the input element provider.
      *
-     * @param factory the input element factory (not <code>null</code>)
-     * @see IElementForEditorInputFactory
+     * @param provider the input element provider (not <code>null</code>)
+     * @see IInputElementProvider
      */
-    public void setInputElementFactory(IElementForEditorInputFactory factory)
+    public void setInputElementProvider(IInputElementProvider provider)
     {
-        if (factory == null)
+        if (provider == null)
             throw new IllegalArgumentException();
-        inputElementFactory = factory;
+        inputElementProvider = provider;
     }
 
     @Override
@@ -71,7 +71,7 @@ public abstract class HandlyOutlinePage
     @Override
     protected Object computeInput()
     {
-        IHandle inputElement = getInputElementFactory().getElement(
+        IHandle inputElement = getInputElementProvider().getElement(
             getEditor().getEditorInput());
         return getContentAdapter().getCorrespondingElement(inputElement);
     }
@@ -132,7 +132,7 @@ public abstract class HandlyOutlinePage
             protected OpenAndLinkWithEditorHelper getLinkingHelper()
             {
                 return new SourceElementLinkingHelper(getOutlinePage(),
-                    getInputElementFactory());
+                    getInputElementProvider());
             }
         });
     }
@@ -191,8 +191,8 @@ public abstract class HandlyOutlinePage
         });
     }
 
-    protected IElementForEditorInputFactory getInputElementFactory()
+    protected IInputElementProvider getInputElementProvider()
     {
-        return inputElementFactory;
+        return inputElementProvider;
     }
 }

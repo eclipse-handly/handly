@@ -45,7 +45,7 @@ public class JavaOutlinePage
      */
     public JavaOutlinePage(IEditorPart editor)
     {
-        setInputElementFactory(JavaHandleForEditorInputFactory.INSTANCE);
+        setInputElementProvider(JavaInputElementProvider.INSTANCE);
         init(editor);
     }
 

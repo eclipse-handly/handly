@@ -10,15 +10,20 @@
  *******************************************************************************/
 package org.eclipse.handly.ui;
 
+import org.eclipse.handly.model.IHandle;
+import org.eclipse.ui.IEditorInput;
+
 /**
- * Returns the element corresponding to the given editor input.
- * This interface may be implemented by clients.
- *
- * @deprecated This interface has been superseded, for all intents and purposes,
- *  by very similar but more aptly named <code>IInputElementProvider</code>,
- *  and will be removed in a future release.
+ * Given an editor input, the input element provider returns an appropriate
+ * <code>IHandle</code>. This interface may be implemented by clients.
  */
-public interface IElementForEditorInputFactory
-    extends IInputElementProvider
+public interface IInputElementProvider
 {
+    /**
+     * Returns the input element for the given editor input.
+     *
+     * @param input the editor input (may be <code>null</code>)
+     * @return the input element, or <code>null</code> if none
+     */
+    IHandle getElement(IEditorInput input);
 }

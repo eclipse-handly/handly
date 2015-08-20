@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.handly.xtext.ui.outline;
 
-import org.eclipse.handly.ui.IElementForEditorInputFactory;
+import org.eclipse.handly.ui.IInputElementProvider;
 import org.eclipse.handly.ui.outline.HandlyOutlinePage;
 import org.eclipse.handly.ui.outline.ICommonOutlinePage;
 import org.eclipse.handly.ui.outline.IOutlineContribution;
@@ -24,7 +24,7 @@ import com.google.inject.Inject;
  * A partial implementation of Handly-based outline page for Xtext editor.
  * <p>
  * Note that this class relies on a language-specific implementation of
- * {@link IElementForEditorInputFactory} being available through injection.
+ * {@link IInputElementProvider} being available through injection.
  * </p>
  */
 public abstract class HandlyXtextOutlinePage
@@ -37,9 +37,9 @@ public abstract class HandlyXtextOutlinePage
     private LexicalSortPreference lexicalSortPreference;
 
     @Inject
-    public void setInputElementFactory(IElementForEditorInputFactory factory)
+    public void setInputElementProvider(IInputElementProvider provider)
     {
-        super.setInputElementFactory(factory);
+        super.setInputElementProvider(provider);
     }
 
     @Override

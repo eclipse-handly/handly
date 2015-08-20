@@ -16,7 +16,7 @@ import org.eclipse.handly.model.SourceElements;
 import org.eclipse.handly.model.adapter.IContentAdapter;
 import org.eclipse.handly.model.adapter.IContentAdapterProvider;
 import org.eclipse.handly.model.adapter.NullContentAdapter;
-import org.eclipse.handly.ui.IElementForEditorInputFactory;
+import org.eclipse.handly.ui.IInputElementProvider;
 import org.eclipse.handly.util.TextRange;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
@@ -30,19 +30,19 @@ public abstract class HandlyOutlinePopup
     extends FilteringOutlinePopup
     implements IContentAdapterProvider
 {
-    private IElementForEditorInputFactory inputElementFactory;
+    private IInputElementProvider inputElementProvider;
 
     /**
-     * Sets the input element factory.
+     * Sets the input element provider.
      *
-     * @param factory the input element factory (not <code>null</code>)
-     * @see IElementForEditorInputFactory
+     * @param provider the input element provider (not <code>null</code>)
+     * @see IInputElementProvider
      */
-    public void setInputElementFactory(IElementForEditorInputFactory factory)
+    public void setInputElementProvider(IInputElementProvider provider)
     {
-        if (factory == null)
+        if (provider == null)
             throw new IllegalArgumentException();
-        inputElementFactory = factory;
+        inputElementProvider = provider;
     }
 
     /**
@@ -64,7 +64,7 @@ public abstract class HandlyOutlinePopup
     @Override
     protected Object computeInput()
     {
-        IHandle inputElement = getInputElementFactory().getElement(
+        IHandle inputElement = getInputElementProvider().getElement(
             getHost().getEditorInput());
         return getContentAdapter().getCorrespondingElement(inputElement);
     }
@@ -115,7 +115,7 @@ public abstract class HandlyOutlinePopup
      */
     protected boolean isInHost(IHandle element)
     {
-        IHandle inputElement = getInputElementFactory().getElement(
+        IHandle inputElement = getInputElementProvider().getElement(
             getHost().getEditorInput());
         while (element != null)
         {
@@ -126,8 +126,8 @@ public abstract class HandlyOutlinePopup
         return false;
     }
 
-    protected IElementForEditorInputFactory getInputElementFactory()
+    protected IInputElementProvider getInputElementProvider()
     {
-        return inputElementFactory;
+        return inputElementProvider;
     }
 }

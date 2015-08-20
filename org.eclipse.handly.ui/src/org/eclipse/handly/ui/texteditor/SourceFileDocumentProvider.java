@@ -18,7 +18,7 @@ import org.eclipse.handly.model.impl.IWorkingCopyBuffer;
 import org.eclipse.handly.model.impl.IWorkingCopyReconciler;
 import org.eclipse.handly.model.impl.SourceFile;
 import org.eclipse.handly.model.impl.WorkingCopyReconciler;
-import org.eclipse.handly.ui.IElementForEditorInputFactory;
+import org.eclipse.handly.ui.IInputElementProvider;
 import org.eclipse.handly.ui.IWorkingCopyManager;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
@@ -35,30 +35,32 @@ public class SourceFileDocumentProvider
     extends TextFileDocumentProvider
     implements IWorkingCopyManager
 {
-    protected final IElementForEditorInputFactory inputElementFactory;
+    protected final IInputElementProvider inputElementProvider;
 
     /**
      * Creates a new source file document provider with no parent.
      *
-     * @param factory {@link IElementForEditorInputFactory}
+     * @param inputElementProvider {@link IInputElementProvider}
      */
-    public SourceFileDocumentProvider(IElementForEditorInputFactory factory)
+    public SourceFileDocumentProvider(
+        IInputElementProvider inputElementProvider)
     {
-        this(factory, null);
+        this(inputElementProvider, null);
     }
 
     /**
      * Creates a new source file document provider
      * which has the given parent provider.
      *
-     * @param factory {@link IElementForEditorInputFactory}
-     * @param parentProvider the parent document provider
+     * @param inputElementProvider {@link IInputElementProvider}
+     * @param parentDocumentProvider the parent document provider
      */
-    public SourceFileDocumentProvider(IElementForEditorInputFactory factory,
-        IDocumentProvider parentProvider)
+    public SourceFileDocumentProvider(
+        IInputElementProvider inputElementProvider,
+        IDocumentProvider parentDocumentProvider)
     {
-        super(parentProvider);
-        inputElementFactory = factory;
+        super(parentDocumentProvider);
+        this.inputElementProvider = inputElementProvider;
     }
 
     @Override
@@ -122,7 +124,7 @@ public class SourceFileDocumentProvider
     {
         if (!(element instanceof IEditorInput))
             return null;
-        IHandle inputElement = inputElementFactory.getElement(
+        IHandle inputElement = inputElementProvider.getElement(
             (IEditorInput)element);
         if (!(inputElement instanceof SourceFile))
             return null;
