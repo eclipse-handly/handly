@@ -28,6 +28,7 @@ import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Handle;
 import org.eclipse.handly.model.impl.HandleManager;
+import org.eclipse.handly.util.TextIndent;
 import org.eclipse.jdt.core.JavaConventions;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.Signature;
@@ -209,18 +210,19 @@ public class PackageFragment
     }
 
     @Override
-    protected void toStringBody(int tab, StringBuilder builder, Body body,
-        boolean showResolvedInfo)
+    protected void toStringBody(TextIndent indent, StringBuilder builder,
+        Body body, boolean showResolvedInfo)
     {
-        super.toStringBody(tab, builder, body, showResolvedInfo);
-        if (body != null && tab > 0)
+        super.toStringBody(indent, builder, body, showResolvedInfo);
+        if (body != null && indent.getLevel() > 0)
             builder.append(" (...)"); //$NON-NLS-1$
     }
 
     @Override
-    protected void toStringChildren(int tab, StringBuilder builder, Body body)
+    protected void toStringChildren(TextIndent indent, StringBuilder builder,
+        Body body)
     {
-        if (tab == 0)
-            super.toStringChildren(tab, builder, body);
+        if (indent.getLevel() == 0)
+            super.toStringChildren(indent, builder, body);
     }
 }

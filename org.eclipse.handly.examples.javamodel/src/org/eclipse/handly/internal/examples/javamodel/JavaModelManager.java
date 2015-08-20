@@ -194,7 +194,7 @@ public class JavaModelManager
     /**
      * Returns the per-project info for the given project. If the info
      * doesn't exist, check for the project existence and create the info.
-
+     *
      * @param project the given project
      * @return the per-project info for the given project (never <code>null</code>)
      * @throws CoreException if the Java project doesn't exist

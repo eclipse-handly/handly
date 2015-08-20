@@ -20,6 +20,7 @@ import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Handle;
 import org.eclipse.handly.model.impl.SourceElementBody;
 import org.eclipse.handly.snapshot.ISnapshot;
+import org.eclipse.handly.util.TextIndent;
 import org.eclipse.handly.util.TextRange;
 import org.eclipse.jdt.core.Flags;
 
@@ -179,10 +180,10 @@ public class Type
     }
 
     @Override
-    protected void toStringBody(int tab, StringBuilder builder, Body body,
-        boolean showResolvedInfo)
+    protected void toStringBody(TextIndent indent, StringBuilder builder,
+        Body body, boolean showResolvedInfo)
     {
-        builder.append(tabString(tab));
+        indent.appendTo(builder);
         if (body != null && body != NO_BODY)
         {
             SourceElementBody typeBody = (SourceElementBody)body;

@@ -13,6 +13,7 @@ package org.eclipse.handly.model.impl;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.PlatformObject;
 import org.eclipse.handly.internal.Activator;
 import org.eclipse.handly.model.IHandle;
+import org.eclipse.handly.util.TextIndent;
 
 /**
  * The root of the handle class hierarchy.
@@ -221,7 +223,25 @@ public abstract class Handle
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
-        toString(0, builder);
+        toString(TextIndent.with("  "), builder); //$NON-NLS-1$
+        return builder.toString();
+    }
+
+    @Override
+    public String toString(ToStringStyle style)
+    {
+        StringBuilder builder = new StringBuilder();
+        if (style.getOptions().contains(ToStringStyle.Option.CHILDREN))
+        {
+            toString(style.getIndent(), builder);
+        }
+        else
+        {
+            toStringBody(style.getIndent(), builder, NO_BODY,
+                true/*show resolved info*/);
+            if (style.getOptions().contains(ToStringStyle.Option.ANCESTORS))
+                toStringAncestors(builder);
+        }
         return builder.toString();
     }
 
@@ -231,7 +251,8 @@ public abstract class Handle
     public String toDebugString()
     {
         StringBuilder builder = new StringBuilder();
-        toStringBody(0, builder, NO_BODY, true/*show resolved info*/);
+        toStringBody(TextIndent.NONE, builder, NO_BODY,
+            true/*show resolved info*/);
         return builder.toString();
     }
 
@@ -249,7 +270,7 @@ public abstract class Handle
     public String toStringWithAncestors(boolean showResolvedInfo)
     {
         StringBuilder builder = new StringBuilder();
-        toStringBody(0, builder, NO_BODY, showResolvedInfo);
+        toStringBody(TextIndent.NONE, builder, NO_BODY, showResolvedInfo);
         toStringAncestors(builder);
         return builder.toString();
     }
@@ -257,10 +278,10 @@ public abstract class Handle
     /**
      * Debugging purposes
      */
-    public Body toStringBody(int tab, StringBuilder builder)
+    public Body toStringBody(TextIndent indent, StringBuilder builder)
     {
         Body body = peekAtBody();
-        toStringBody(tab, builder, body, true/*show resolved info*/);
+        toStringBody(indent, builder, body, true/*show resolved info*/);
         return body;
     }
 
@@ -272,7 +293,7 @@ public abstract class Handle
         if (parent != null && parent.getParent() != null)
         {
             builder.append(" [in "); //$NON-NLS-1$
-            parent.toStringBody(0, builder, NO_BODY,
+            parent.toStringBody(TextIndent.NONE, builder, NO_BODY,
                 false/*don't show resolved info*/);
             parent.toStringAncestors(builder);
             builder.append(']');
@@ -282,37 +303,42 @@ public abstract class Handle
     /**
      * Debugging purposes
      */
-    protected void toString(int tab, StringBuilder builder)
+    protected void toString(TextIndent indent, StringBuilder builder)
     {
-        Body body = toStringBody(tab, builder);
-        if (tab == 0)
+        Body body = toStringBody(indent, builder);
+        if (indent.getLevel() == 0)
         {
             toStringAncestors(builder);
         }
-        toStringChildren(tab, builder, body);
+        toStringChildren(indent, builder, body);
     }
 
     /**
      * Debugging purposes
      */
-    protected void toStringChildren(int tab, StringBuilder builder, Body body)
+    protected void toStringChildren(TextIndent indent, StringBuilder builder,
+        Body body)
     {
         if (body == null)
             return;
+        ToStringStyle childStyle = null;
         for (IHandle child : body.getChildren())
         {
-            builder.append('\n');
-            ((Handle)child).toString(tab + 1, builder);
+            indent.appendLineSeparatorTo(builder);
+            if (childStyle == null)
+                childStyle = new ToStringStyle(indent.getIncreasedIndent(),
+                    EnumSet.of(ToStringStyle.Option.CHILDREN));
+            builder.append(child.toString(childStyle));
         }
     }
 
     /**
      * Debugging purposes
      */
-    protected void toStringBody(int tab, StringBuilder builder, Body body,
-        boolean showResolvedInfo)
+    protected void toStringBody(TextIndent indent, StringBuilder builder,
+        Body body, boolean showResolvedInfo)
     {
-        builder.append(tabString(tab));
+        indent.appendTo(builder);
         toStringName(builder);
         if (body == null)
         {
@@ -326,14 +352,6 @@ public abstract class Handle
     protected void toStringName(StringBuilder builder)
     {
         builder.append(getName());
-    }
-
-    protected String tabString(int tab)
-    {
-        StringBuilder builder = new StringBuilder();
-        for (int i = tab; i > 0; i--)
-            builder.append("  "); //$NON-NLS-1$
-        return builder.toString();
     }
 
     /**

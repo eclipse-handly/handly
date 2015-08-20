@@ -45,7 +45,7 @@ public interface ICompilationUnit
      * <p>
      * This is a handle-only method. The import container may or may not exist.
      * </p>
-
+     *
      * @return the import container for this compilation unit
      *  (never <code>null</code>)
      */

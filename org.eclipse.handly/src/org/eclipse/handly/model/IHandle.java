@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,10 +11,15 @@
  *******************************************************************************/
 package org.eclipse.handly.model;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.handly.util.TextIndent;
 
 /**
  * Represents an element of a handle-based model.
@@ -141,4 +146,74 @@ public interface IHandle
      */
     <T extends IHandle> T[] getChildren(Class<T> childType)
         throws CoreException;
+
+    /**
+     * Returns a string representation of this element. Note that the specified
+     * style serves as a hint that implementations may or may not fully support.
+     *
+     * @param style style hint (not <code>null</code>)
+     * @return a string representation of this element (never <code>null</code>)
+     */
+    String toString(ToStringStyle style);
+
+    /**
+     * Style hint for <code>IHandle.toString</code>.
+     * @see IHandle#toString(ToStringStyle)
+     */
+    final class ToStringStyle
+    {
+        private TextIndent indent;
+        private EnumSet<Option> options;
+
+        /**
+         * Creates a new style with the given indent and options.
+         *
+         * @param indent indentation info (not <code>null</code>)
+         * @param options style options (not <code>null</code>)
+         */
+        public ToStringStyle(TextIndent indent, EnumSet<Option> options)
+        {
+            if (indent == null)
+                throw new IllegalArgumentException();
+            if (options == null)
+                throw new IllegalArgumentException();
+            this.indent = indent;
+            this.options = options;
+        }
+
+        /**
+         * Returns the indentation info.
+         *
+         * @return the indentation info (never <code>null</code>)
+         */
+        public TextIndent getIndent()
+        {
+            return indent;
+        }
+
+        /**
+         * Returns the style options.
+         *
+         * @return the style options (never <code>null</code>)
+         */
+        public Set<Option> getOptions()
+        {
+            return Collections.unmodifiableSet(options);
+        }
+
+        /**
+         * Style options.
+         */
+        public enum Option
+        {
+            /**
+             * Include ancestors info.
+             */
+            ANCESTORS,
+            /**
+             * Include children info.
+             */
+            CHILDREN
+        }
+    }
 }

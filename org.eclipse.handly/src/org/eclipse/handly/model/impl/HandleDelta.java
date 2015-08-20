@@ -12,6 +12,7 @@
 package org.eclipse.handly.model.impl;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.IHandleDelta;
 import org.eclipse.handly.model.ISourceFile;
+import org.eclipse.handly.util.TextIndent;
 
 /**
  * To create a delta tree, use the <code>insertXXX</code> methods on a root delta.
@@ -575,7 +577,9 @@ public class HandleDelta
         {
             builder.append('\t');
         }
-        toDebugString(element, builder);
+        builder.append(element.toString(new IHandle.ToStringStyle(
+            TextIndent.NONE, EnumSet.noneOf(
+                IHandle.ToStringStyle.Option.class))));
         toDebugString(builder);
         for (HandleDelta child : affectedChildren)
         {
@@ -663,7 +667,9 @@ public class HandleDelta
             if (prev)
                 builder.append(" | "); //$NON-NLS-1$
             builder.append("MOVED_FROM("); //$NON-NLS-1$
-            toStringWithAncestors(getMovedFromElement(), builder);
+            builder.append(getMovedFromElement().toString(
+                new IHandle.ToStringStyle(TextIndent.NONE, EnumSet.of(
+                    IHandle.ToStringStyle.Option.ANCESTORS))));
             builder.append(')');
             prev = true;
         }
@@ -672,7 +678,9 @@ public class HandleDelta
             if (prev)
                 builder.append(" | "); //$NON-NLS-1$
             builder.append("MOVED_TO("); //$NON-NLS-1$
-            toStringWithAncestors(getMovedToElement(), builder);
+            builder.append(getMovedToElement().toString(
+                new IHandle.ToStringStyle(TextIndent.NONE, EnumSet.of(
+                    IHandle.ToStringStyle.Option.ANCESTORS))));
             builder.append(')');
             prev = true;
         }
@@ -733,32 +741,6 @@ public class HandleDelta
             prev = true;
         }
         return prev;
-    }
-
-    /**
-     * Debugging purposes
-     */
-    protected void toDebugString(IHandle element, StringBuilder builder)
-    {
-        if (element instanceof Handle)
-            builder.append(((Handle)element).toDebugString());
-        else
-            builder.append(element.getName());
-    }
-
-    /**
-     * Debugging purposes
-     */
-    protected void toStringWithAncestors(IHandle element, StringBuilder builder)
-    {
-        toDebugString(element, builder);
-        IHandle parent = element.getParent();
-        if (parent != null && parent.getParent() != null)
-        {
-            builder.append(" [in "); //$NON-NLS-1$
-            toStringWithAncestors(parent, builder);
-            builder.append(']');
-        }
     }
 
     /**

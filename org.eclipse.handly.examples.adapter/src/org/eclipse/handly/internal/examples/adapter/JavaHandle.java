@@ -150,6 +150,12 @@ public class JavaHandle
     }
 
     @Override
+    public String toString(ToStringStyle style)
+    {
+        return toString();
+    }
+
+    @Override
     public IHandle[] getChildren() throws CoreException
     {
         if (!(javaElement instanceof IParent))

@@ -34,7 +34,8 @@ public class AdapterModelManager
     /**
      * The sole instance of the manager.
      */
-    public static final AdapterModelManager INSTANCE = new AdapterModelManager();
+    public static final AdapterModelManager INSTANCE =
+        new AdapterModelManager();
 
     private ListenerList listenerList;
 
