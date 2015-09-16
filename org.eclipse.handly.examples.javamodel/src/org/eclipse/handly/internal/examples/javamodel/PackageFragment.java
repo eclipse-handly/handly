@@ -13,6 +13,7 @@ package org.eclipse.handly.internal.examples.javamodel;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -126,6 +127,35 @@ public class PackageFragment
     }
 
     @Override
+    public boolean hasSubpackages() throws CoreException
+    {
+        IPackageFragment[] packages =
+            getParent().getChildren(IPackageFragment.class);
+        int namesLength = this.simpleNames.length;
+        for (IPackageFragment pack : packages)
+        {
+            String[] otherNames = ((PackageFragment)pack).simpleNames;
+            if (otherNames.length <= namesLength)
+                continue;
+
+            boolean isSub = true;
+            for (int i = 0; i < namesLength; i++)
+            {
+                if (!Objects.equals(this.simpleNames[i], otherNames[i]))
+                {
+                    isSub = false;
+                }
+            }
+
+            if (isSub)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     protected HandleManager getHandleManager()
     {
         return JavaModelManager.INSTANCE.getHandleManager();
@@ -143,7 +173,8 @@ public class PackageFragment
         if (resource != null && !resource.isAccessible())
             throw new CoreException(Activator.createErrorStatus(
                 MessageFormat.format("Resource ''{0}'' is not accessible",
-                    resource.getFullPath()), null));
+                    resource.getFullPath()),
+                null));
     }
 
     boolean isValidPackageName()
@@ -188,7 +219,8 @@ public class PackageFragment
                 if (member instanceof IFile)
                 {
                     if (JavaConventions.validateCompilationUnitName(
-                        member.getName(), sourceLevel, complianceLevel).getSeverity() != IStatus.ERROR)
+                        member.getName(), sourceLevel,
+                        complianceLevel).getSeverity() != IStatus.ERROR)
                     {
                         children.add(new CompilationUnit(this, (IFile)member));
                     }
