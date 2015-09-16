@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 1C LLC.
+ * Copyright (c) 2015 1C LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  * 
  * Contributors:
  *     Vladimir Piskarev (1C) - initial API and implementation
+ *     Ondrej Ilcik (Codasip)
  *******************************************************************************/
 package org.eclipse.handly.internal.examples.javamodel;
 
@@ -126,6 +127,37 @@ public class PackageFragment
     }
 
     @Override
+    public boolean hasSubpackages() throws CoreException
+    {
+        IPackageFragment[] packages =
+            getParent().getChildren(IPackageFragment.class);
+        int namesLength = this.simpleNames.length;
+        for (IPackageFragment pack : packages)
+        {
+            String[] otherNames = ((PackageFragment)pack).simpleNames;
+            if (otherNames.length <= namesLength)
+                continue;
+
+            boolean isSub = true;
+            for (int i = 0; i < namesLength; i++)
+            {
+                if ((this.simpleNames[i] == otherNames[i])
+                    || (this.simpleNames[i] != null
+                        && this.simpleNames[i].equals(otherNames[i])))
+                {
+                    isSub = false;
+                }
+            }
+
+            if (isSub)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     protected HandleManager getHandleManager()
     {
         return JavaModelManager.INSTANCE.getHandleManager();
@@ -143,7 +175,8 @@ public class PackageFragment
         if (resource != null && !resource.isAccessible())
             throw new CoreException(Activator.createErrorStatus(
                 MessageFormat.format("Resource ''{0}'' is not accessible",
-                    resource.getFullPath()), null));
+                    resource.getFullPath()),
+                null));
     }
 
     boolean isValidPackageName()
@@ -188,7 +221,8 @@ public class PackageFragment
                 if (member instanceof IFile)
                 {
                     if (JavaConventions.validateCompilationUnitName(
-                        member.getName(), sourceLevel, complianceLevel).getSeverity() != IStatus.ERROR)
+                        member.getName(), sourceLevel,
+                        complianceLevel).getSeverity() != IStatus.ERROR)
                     {
                         children.add(new CompilationUnit(this, (IFile)member));
                     }

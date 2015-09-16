@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 1C LLC.
+ * Copyright (c) 2015 1C LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,10 +7,12 @@
  * 
  * Contributors:
  *     Vladimir Piskarev (1C) - initial API and implementation
+ *     Ondrej Ilcik (Codasip)
  *******************************************************************************/
 package org.eclipse.handly.examples.javamodel;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.JavaModelException;
 
 /**
  * A package fragment is a portion of the workspace corresponding to
@@ -23,7 +25,7 @@ public interface IPackageFragment
     extends IJavaElement
 {
     IPackageFragmentRoot getParent();
-    
+
     /**
      * Returns the compilation unit with the specified name in this package
      * (for example, <code>"Object.java"</code>). The name must end with ".java".
@@ -65,4 +67,14 @@ public interface IPackageFragment
      * @return <code>true</code> if this package fragment is a default package
      */
     boolean isDefaultPackage();
+
+    /**
+     * Returns whether this package fragment is a prefix of other package 
+     * fragments in this package fragment's root.
+     * @return
+     * @throws JavaModelException if this element does not exist or if an exception 
+     *  occurs while accessing its corresponding resource
+     * @throws CoreException 
+     */
+    boolean hasSubpackages() throws CoreException;
 }
