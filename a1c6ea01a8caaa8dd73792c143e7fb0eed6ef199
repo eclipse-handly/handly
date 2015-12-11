@@ -1,0 +1,8 @@
+Verified+1: Hudson CI
+Verified+1: Vladimir Piskarev <pisv@1c.ru>
+Code-Review+2: Vladimir Piskarev <pisv@1c.ru>
+Submitted-by: Vladimir Piskarev <pisv@1c.ru>
+Submitted-at: Fri, 11 Dec 2015 08:52:00 -0500
+Reviewed-on: https://git.eclipse.org/r/59925
+Project: handly/org.eclipse.handly
+Branch: refs/heads/javamodel
