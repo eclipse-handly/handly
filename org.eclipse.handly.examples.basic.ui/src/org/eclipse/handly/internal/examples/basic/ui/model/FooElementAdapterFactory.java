@@ -18,37 +18,30 @@ import org.eclipse.handly.examples.basic.ui.model.IFooModel;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
 
 /**
- * Adapts an appropriate Foo element to the corresponding <code>IResource</code>.
+ * Adapts an appropriate Foo element to the corresponding
+ * <code>IResource</code>.
  */
-public class FooElementAdapterFactory
-    implements IAdapterFactory
-{
-    private static final Class<?>[] ADAPTER_LIST = new Class<?>[] {
-        IResource.class };
+public class FooElementAdapterFactory implements IAdapterFactory {
+	private static final Class<?>[] ADAPTER_LIST = new Class<?>[] { IResource.class };
 
-    @Override
-    public Object getAdapter(Object adaptableObject,
-        @SuppressWarnings("rawtypes") Class adapterType)
-    {
-        IFooElement element = (IFooElement)adaptableObject;
-        if (adapterType == IResource.class)
-            return getResource(element);
-        return null;
-    }
+	@Override
+	public Object getAdapter(Object adaptableObject, @SuppressWarnings("rawtypes") Class adapterType) {
+		if (adapterType == IResource.class) {
+			IFooElement element = (IFooElement) adaptableObject;
+			return getResource(element);
+		}
+		return null;
+	}
 
-    @Override
-    public Class<?>[] getAdapterList()
-    {
-        return ADAPTER_LIST;
-    }
+	@Override
+	public Class<?>[] getAdapterList() {
+		return ADAPTER_LIST;
+	}
 
-    private IResource getResource(IFooElement element)
-    {
-        if (element instanceof IFooModel || element instanceof IFooProject
-            || element instanceof IFooFile)
-        {
-            return element.getResource();
-        }
-        return null;
-    }
+	private IResource getResource(IFooElement element) {
+		if (element instanceof IFooModel || element instanceof IFooProject || element instanceof IFooFile) {
+			return element.getResource();
+		}
+		return null;
+	}
 }

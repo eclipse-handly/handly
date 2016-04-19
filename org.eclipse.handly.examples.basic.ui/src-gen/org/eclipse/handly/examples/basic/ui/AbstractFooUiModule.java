@@ -4,14 +4,13 @@
  */
 package org.eclipse.handly.examples.basic.ui;
 
-import org.eclipse.xtext.ui.DefaultUiModule;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * Manual modifications go to {org.eclipse.handly.examples.basic.ui.FooUiModule}
  */
 @SuppressWarnings("all")
-public abstract class AbstractFooUiModule extends DefaultUiModule {
+public abstract class AbstractFooUiModule extends org.eclipse.xtext.ui.DefaultUiModule {
 	
 	public AbstractFooUiModule(AbstractUIPlugin plugin) {
 		super(plugin);

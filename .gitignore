@@ -1,3 +1,4 @@
 bin/
 target/
 .metadata/
+org.eclipse.handly.examples.basic/.antlr-generator-3.2.0-patch.jar
