@@ -221,7 +221,7 @@ public class HandlyXtextDocument
         DocumentChangeOperation operation = new DocumentChangeOperation(this,
             change);
         UiDocumentChangeRunner runner = new UiDocumentChangeRunner(
-            UiSynchronizer.DEFAULT, operation);
+            UiSynchronizer.getDefault(), operation);
         return runner.run();
     }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2016 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,8 @@
  *     Vladimir Piskarev (1C) - initial API and implementation
  *******************************************************************************/
 package org.eclipse.handly.document;
+
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.handly.snapshot.StaleSnapshotException;
 import org.eclipse.handly.util.UiSynchronizer;
@@ -80,7 +82,16 @@ public final class UiDocumentChangeRunner
             }
         };
 
-        synchronizer.syncExec(runnable);
+        try
+        {
+            synchronizer.syncExec(runnable);
+        }
+        catch (ExecutionException e)
+        {
+            // using exception[0] is a more robust way of detecting execution exception
+            // (org.eclipse.ui.internal.UISynchronizer.syncExec() doesn't always
+            // propagate exceptions from the UI thread to the calling thread)
+        }
 
         if (exception[0] != null)
         {

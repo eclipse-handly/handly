@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2016 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,13 @@
  *******************************************************************************/
 package org.eclipse.handly.util;
 
+import java.util.concurrent.ExecutionException;
+
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.handly.internal.DisplaySynchronizer;
+import org.eclipse.ui.PlatformUI;
+import org.osgi.framework.Bundle;
+
 /**
  * Allows to execute runnables in the user-interface thread.
  *
@@ -18,18 +25,28 @@ package org.eclipse.handly.util;
 public abstract class UiSynchronizer
 {
     /**
-     * The default instance of the synchronizer or
-     * <code>null</code> if in headless mode.
-     *
-     * @noassign This field is not intended to be assigned by clients.
+     * A default instance of the synchronizer, or <code>null</code>
+     * if not available at this time (e.g. when running headless).
      */
-    public static UiSynchronizer DEFAULT;
+    public static UiSynchronizer getDefault()
+    {
+        Bundle b = Platform.getBundle("org.eclipse.ui"); //$NON-NLS-1$
+        if (b != null && b.getState() == Bundle.ACTIVE
+            && PlatformUI.isWorkbenchRunning())
+        {
+            return new DisplaySynchronizer(
+                PlatformUI.getWorkbench().getDisplay());
+        }
+        return null;
+    }
 
     /**
      * Returns the user-interface thread the synchronizer uses to execute
      * runnables.
      *
      * @return the user-interface thread (not <code>null</code>)
+     * @throws IllegalStateException if the synchronizer can no longer be
+     *  accessed (e.g. the underlying display has been disposed)
      */
     public abstract Thread getThread();
 
@@ -42,6 +59,8 @@ public abstract class UiSynchronizer
      *
      * @param runnable code to run on the user-interface thread
      *  (not <code>null</code>)
+     * @throws IllegalStateException if the synchronizer can no longer be
+     *  accessed (e.g. the underlying display has been disposed)
      */
     public abstract void asyncExec(Runnable runnable);
 
@@ -53,6 +72,10 @@ public abstract class UiSynchronizer
      *
      * @param runnable code to run on the user-interface thread
      *  (not <code>null</code>)
+     * @throws IllegalStateException if the synchronizer can no longer be
+     *  accessed (e.g. the underlying display has been disposed)
+     * @throws ExecutionException if an exception occurred when executing
+     *  the runnable
      */
-    public abstract void syncExec(Runnable runnable);
+    public abstract void syncExec(Runnable runnable) throws ExecutionException;
 }
