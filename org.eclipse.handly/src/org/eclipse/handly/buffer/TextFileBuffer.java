@@ -91,8 +91,13 @@ public class TextFileBuffer
             if (!getDelegate().isSynchronizationContextRequested())
                 return operation.execute(monitor);
 
-            UiBufferChangeRunner runner = new UiBufferChangeRunner(
-                UiSynchronizer.DEFAULT, operation);
+            UiSynchronizer synchronizer = UiSynchronizer.getDefault();
+            if (synchronizer == null)
+                throw new AssertionError(
+                    "Synchronization context is requested but UI is not running?"); //$NON-NLS-1$
+
+            UiBufferChangeRunner runner = new UiBufferChangeRunner(synchronizer,
+                operation);
             return runner.run(monitor);
         }
         catch (MalformedTreeException e)
