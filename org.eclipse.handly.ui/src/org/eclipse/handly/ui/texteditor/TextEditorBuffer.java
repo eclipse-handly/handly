@@ -67,7 +67,7 @@ public class TextEditorBuffer
     {
         if (editor == null)
             throw new IllegalArgumentException();
-        if ((this.uiSynchronizer = UiSynchronizer.DEFAULT) == null)
+        if ((this.uiSynchronizer = UiSynchronizer.getDefault()) == null)
             throw new AssertionError();
         if ((this.editorInput = editor.getEditorInput()) == null)
             throw new IllegalArgumentException();

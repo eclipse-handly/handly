@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2016 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,11 @@
  *******************************************************************************/
 package org.eclipse.handly.internal;
 
+import java.util.concurrent.ExecutionException;
+
 import org.eclipse.handly.util.UiSynchronizer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.widgets.Display;
 
 /**
@@ -36,18 +40,42 @@ public class DisplaySynchronizer
     @Override
     public Thread getThread()
     {
-        return display.getThread();
+        try
+        {
+            return display.getThread();
+        }
+        catch (SWTException e)
+        {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
     public void asyncExec(Runnable runnable)
     {
-        display.asyncExec(runnable);
+        try
+        {
+            display.asyncExec(runnable);
+        }
+        catch (SWTException e)
+        {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
-    public void syncExec(Runnable runnable)
+    public void syncExec(Runnable runnable) throws ExecutionException
     {
-        display.syncExec(runnable);
+        try
+        {
+            display.syncExec(runnable);
+        }
+        catch (SWTException e)
+        {
+            if (e.code == SWT.ERROR_FAILED_EXEC)
+                throw new ExecutionException(e.throwable);
+            else
+                throw new IllegalStateException(e);
+        }
     }
 }
