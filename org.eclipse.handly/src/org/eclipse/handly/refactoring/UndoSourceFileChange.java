@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.handly.refactoring;
 
+import static org.eclipse.handly.context.Contexts.EMPTY_CONTEXT;
 import static org.eclipse.handly.model.Elements.exists;
 import static org.eclipse.handly.model.Elements.getPath;
 import static org.eclipse.handly.model.Elements.getBuffer;
@@ -88,7 +89,7 @@ class UndoSourceFileChange
         if (undoChange.getBase() == null)
             return result; // OK
 
-        try (IBuffer buffer = getBuffer(sourceFile, true, pm))
+        try (IBuffer buffer = getBuffer(sourceFile, EMPTY_CONTEXT, pm))
         {
             if (!undoChange.getBase().isEqualTo(buffer.getSnapshot()))
             {
@@ -105,8 +106,8 @@ class UndoSourceFileChange
     {
         pm.beginTask("", 2); //$NON-NLS-1$
         try (
-            IBuffer buffer = getBuffer(sourceFile, true, new SubProgressMonitor(
-                pm, 1)))
+            IBuffer buffer = getBuffer(sourceFile, EMPTY_CONTEXT,
+                new SubProgressMonitor(pm, 1)))
         {
             IBufferChange redoChange;
 

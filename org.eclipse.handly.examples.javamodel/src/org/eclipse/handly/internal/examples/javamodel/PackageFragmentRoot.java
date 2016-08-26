@@ -12,7 +12,6 @@ package org.eclipse.handly.internal.examples.javamodel;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
@@ -22,6 +21,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.examples.javamodel.IPackageFragment;
 import org.eclipse.handly.examples.javamodel.IPackageFragmentRoot;
 import org.eclipse.handly.model.IElement;
@@ -120,7 +120,7 @@ public class PackageFragmentRoot
     }
 
     @Override
-    protected void hValidateExistence() throws CoreException
+    protected void hValidateExistence(IContext context) throws CoreException
     {
         validateOnClasspath();
 
@@ -140,24 +140,19 @@ public class PackageFragmentRoot
     }
 
     @Override
-    protected Object hNewBody()
-    {
-        return new PackageFragmentRootBody();
-    }
-
-    @Override
-    protected void hBuildStructure(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
+    protected void hBuildStructure(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
+        PackageFragmentRootBody body = new PackageFragmentRootBody();
         if (resource.getType() == IResource.FOLDER
             || resource.getType() == IResource.PROJECT)
         {
             IContainer rootFolder = (IContainer)resource;
             ArrayList<IPackageFragment> children = new ArrayList<>();
             computeFolderChildren(rootFolder, Path.EMPTY, children);
-            ((Body)body).setChildren(children.toArray(Body.NO_CHILDREN));
+            body.setChildren(children.toArray(Body.NO_CHILDREN));
         }
+        context.get(NEW_ELEMENTS).put(this, body);
     }
 
     private void computeFolderChildren(IContainer folder, IPath packagePath,

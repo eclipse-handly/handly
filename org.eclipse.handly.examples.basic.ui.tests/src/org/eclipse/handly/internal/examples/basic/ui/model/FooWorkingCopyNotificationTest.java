@@ -115,7 +115,7 @@ public class FooWorkingCopyNotificationTest
 
                 assertDelta(null, listener.delta);
 
-                workingCopy.reconcile(false, null);
+                workingCopy.reconcile(null);
 
                 assertFalse(def.exists());
 
@@ -154,7 +154,7 @@ public class FooWorkingCopyNotificationTest
 
                 assertDelta(null, listener.delta);
 
-                workingCopy.reconcile(false, null);
+                workingCopy.reconcile(null);
 
                 assertDelta(newDeltaBuilder(workingCopy).removed(
                     varY).getDelta(), listener.delta);
@@ -171,7 +171,7 @@ public class FooWorkingCopyNotificationTest
 
                 assertDelta(null, listener.delta);
 
-                workingCopy.reconcile(false, null);
+                workingCopy.reconcile(null);
 
                 assertDelta(newDeltaBuilder(workingCopy).added(varY).getDelta(),
                     listener.delta);
@@ -203,7 +203,7 @@ public class FooWorkingCopyNotificationTest
 
                 assertDelta(null, listener.delta);
 
-                workingCopy.reconcile(false, null);
+                workingCopy.reconcile(null);
 
                 assertDelta(newDeltaBuilder(workingCopy).changed(def,
                     F_CONTENT).getDelta(), listener.delta); // 'parameterNames' property changed

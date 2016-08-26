@@ -20,24 +20,25 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.model.Elements;
 import org.eclipse.handly.model.IElement;
 
 /**
- * A helper class for building the entire structure of innermost "openables"
- * such as source files.
+ * A helper class for building the structure of {@link Element#hIsOpenable()
+ * openable} elements that have non-openable children. A typical example of
+ * such elements is a {@link SourceFile}.
  * <p>
- * The structure is represented by a given map of handle/body relationships
- * that will be populated as calls to {@link #addChild(Body, IElement, Object)}
- * are made on the helper. Make sure to complete initialization of each
- * body with a call to {@link #complete(Body)}.
+ * The structure is being created as calls to {@link #addChild(Body, IElement,
+ * Object)} are made on the helper. Make sure to complete initialization of each
+ * parent body with a call to {@link #complete(Body)}.
  * </p>
  * <p>
  * Clients can use this class as it stands or subclass it
  * as circumstances warrant.
  * </p>
  *
- * @see Element#hBuildStructure(Object, Map, IProgressMonitor)
+ * @see Element#hBuildStructure(IContext, IProgressMonitor)
  */
 public class StructureHelper
 {
@@ -49,8 +50,9 @@ public class StructureHelper
     private final Map<Body, List<IElement>> children = new HashMap<>();
 
     /**
-     * Constructs a new structure helper with the given <code>newElements</code>
-     * map.
+     * Constructs a new structure helper that will populate the given map
+     * with new handle/body relationships as calls to {@link #addChild} are
+     * made on the helper.
      *
      * @param newElements the map to populate with structure elements
      *  (not <code>null</code>)
@@ -65,13 +67,15 @@ public class StructureHelper
 
     /**
      * Remembers the given element as a child of the yet-to-be-{@link
-     * #complete(Body) completed} <code>parentBody</code> and adds
-     * the child element and its body to the <code>newElements</code> map,
-     * resolving {@link #resolveDuplicates(IElement) duplicates} along the way.
+     * #complete(Body) completed} parent body and establishes an association
+     * between the child handle and the child body, resolving {@link
+     * #resolveDuplicates(IElement) duplicates} along the way.
      *
      * @param parentBody the body of the parent element (not <code>null</code>)
-     * @param child the handle of the child element (not <code>null</code>)
-     * @param childBody the body of the child element (not <code>null</code>)
+     * @param child the handle for the child element (not <code>null</code>)
+     * @param childBody the body for the child element, or <code>null</code>
+     *  if no body is to be associated with the child element (e.g. if the
+     *  child is an {@link Element#hIsOpenable() openable} element)
      */
     public void addChild(Body parentBody, IElement child, Object childBody)
     {
@@ -79,15 +83,15 @@ public class StructureHelper
             throw new IllegalArgumentException();
         if (child == null)
             throw new IllegalArgumentException();
-        if (childBody == null)
-            throw new IllegalArgumentException();
-
-        resolveDuplicates(child);
-        if (newElements.containsKey(child))
-            throw new AssertionError(
-                "Attempt to add an already present element: " //$NON-NLS-1$
-                    + Elements.toString(child, of(FORMAT_STYLE, MEDIUM)));
-        newElements.put(child, childBody);
+        if (childBody != null)
+        {
+            resolveDuplicates(child);
+            if (newElements.containsKey(child))
+                throw new AssertionError(
+                    "Attempt to add an already present element: " //$NON-NLS-1$
+                        + Elements.toString(child, of(FORMAT_STYLE, MEDIUM)));
+            newElements.put(child, childBody);
+        }
         List<IElement> childrenList = children.get(parentBody);
         if (childrenList == null)
             children.put(parentBody, childrenList = new ArrayList<IElement>());
@@ -96,8 +100,8 @@ public class StructureHelper
 
     /**
      * Completes initialization of the given body. In particular, initializes it
-     * with a list of elements previously {@link #addChild(Body, IElement, Object)
-     * remembered} as children of the body.
+     * with a list of elements previously {@link #addChild remembered} as children
+     * of the body.
      *
      * @param body the given body (not <code>null</code>)
      */
@@ -114,10 +118,10 @@ public class StructureHelper
     /**
      * Allows to make distinctions among elements which would otherwise be equal.
      * <p>
-     * If the given element is a <code>SourceConstruct</code> already present
-     * in the <code>newElements</code> map, this implementation increments its
-     * {@link SourceConstruct#hOccurrenceCount() occurrence count} until
-     * it becomes a unique key in the map.
+     * If the given element is a <code>SourceConstruct</code> which is equal to
+     * an already {@link #addChild added} element, this implementation increments
+     * its {@link SourceConstruct#hOccurrenceCount() occurrence count} until
+     * it is no longer equal to any previously added element.
      * </p>
      *
      * @param element the given element (never <code>null</code>)

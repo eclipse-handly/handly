@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.handly.internal.examples.adapter;
 
+import static org.eclipse.handly.model.Elements.CREATE_BUFFER;
+import static org.eclipse.handly.model.Elements.FORCE_RECONCILING;
+
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IFile;
@@ -17,6 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.handly.buffer.IBuffer;
 import org.eclipse.handly.buffer.TextFileBuffer;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.model.impl.ISourceFileImpl;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.JavaModelException;
@@ -75,22 +79,24 @@ class JavaSourceFile
     }
 
     @Override
-    public void hReconcile(boolean forceProblemDetection, Object arg,
-        IProgressMonitor monitor) throws CoreException
+    public void hReconcile(IContext context, IProgressMonitor monitor)
+        throws CoreException
     {
         getCompilationUnit().reconcile(ICompilationUnit.NO_AST,
-            forceProblemDetection, null/*use primary owner*/, monitor);
+            context.getOrDefault(FORCE_RECONCILING), null/*use primary owner*/,
+            monitor);
     }
 
     @Override
-    public IBuffer hBuffer(boolean create, IProgressMonitor monitor)
+    public IBuffer hBuffer(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
         IFile file = hFile();
         if (file == null)
             throw new AssertionError("No underlying IFile for " + toString());
-        if (!create && ITextFileBufferManager.DEFAULT.getTextFileBuffer(
-            file.getFullPath(), LocationKind.IFILE) == null)
+        if (!context.getOrDefault(CREATE_BUFFER)
+            && ITextFileBufferManager.DEFAULT.getTextFileBuffer(
+                file.getFullPath(), LocationKind.IFILE) == null)
         {
             return null;
         }

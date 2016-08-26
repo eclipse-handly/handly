@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.handly.buffer.IBuffer;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.model.ISourceFile;
 
 /**
@@ -61,40 +62,24 @@ public interface ISourceFileImpl
     /**
      * Makes this working copy consistent with its buffer by updating
      * the element's structure and properties as necessary. Does nothing
-     * if the source file is not in working copy mode. The boolean argument
-     * allows to force reconciling even if the working copy is already
-     * consistent with its buffer.
+     * if the source file is not in working copy mode.
+     * <p>
+     * Implementations are encouraged to support the following standard options,
+     * which may be specified in the given context:
+     * </p>
+     * <ul>
+     * {@link org.eclipse.handly.model.Elements#FORCE_RECONCILING
+     * FORCE_RECONCILING} - Indicates whether reconciling has to be performed
+     * even if the working copy is already consistent with its buffer.
+     * </ul>
      *
-     * @param force indicates whether reconciling has to be performed
-     *  even if the working copy is already consistent with its buffer
+     * @param context the operation context (not <code>null</code>)
      * @param monitor a progress monitor, or <code>null</code>
      *  if progress reporting is not desired
      * @throws CoreException if this working copy cannot be reconciled
      * @throws OperationCanceledException if this method is canceled
      */
-    default void hReconcile(boolean force, IProgressMonitor monitor)
-        throws CoreException
-    {
-        hReconcile(force, null, monitor);
-    }
-
-    /**
-     * Makes this working copy consistent with its buffer by updating
-     * the element's structure and properties as necessary. Does nothing
-     * if the source file is not in working copy mode. The boolean argument
-     * allows to force reconciling even if the working copy is already
-     * consistent with its buffer. This method also takes an additional
-     * <code>Object</code> argument reserved for model-specific use.
-     *
-     * @param force indicates whether reconciling has to be performed
-     *  even if the working copy is already consistent with its buffer
-     * @param arg reserved for model-specific use (may be <code>null</code>)
-     * @param monitor a progress monitor, or <code>null</code>
-     *  if progress reporting is not desired
-     * @throws CoreException if this working copy cannot be reconciled
-     * @throws OperationCanceledException if this method is canceled
-     */
-    void hReconcile(boolean force, Object arg, IProgressMonitor monitor)
+    void hReconcile(IContext context, IProgressMonitor monitor)
         throws CoreException;
 
     /**
@@ -107,44 +92,27 @@ public interface ISourceFileImpl
      * disposed only after it is released by every owner. The buffer must not
      * be accessed by clients which don't own it.
      * </p>
-     *
-     * @return the buffer opened for this source file (never <code>null</code>)
-     * @throws CoreException if this source file does not exist
-     *  or if its contents cannot be accessed
-     * @see IBuffer
-     */
-    default IBuffer hBuffer() throws CoreException
-    {
-        return hBuffer(true, null);
-    }
-
-    /**
-     * Returns the buffer opened for this source file. Note that buffers may
-     * be shared by multiple clients, so the returned buffer may have unsaved
-     * changes if it has been modified by another client.
      * <p>
-     * The client takes (potentially shared) ownership of the returned buffer
-     * and is responsible for releasing it when finished. The buffer will be
-     * disposed only after it is released by every owner. The buffer must not
-     * be accessed by clients which don't own it.
+     * Implementations are encouraged to support the following standard options,
+     * which may be specified in the given context:
      * </p>
-     * <p>
-     * If <code>create == false</code> and there is no buffer currently
-     * opened for this source file, <code>null</code> is returned.
-     * </p>
+     * <ul>
+     * {@link org.eclipse.handly.model.Elements#CREATE_BUFFER CREATE_BUFFER} -
+     * Indicates whether a new buffer should be created if none already exists
+     * for the source file.
+     * </ul>
      *
-     * @param create indicates whether a new buffer should be created
-     *  if none already exists for this source file
+     * @param context the operation context (not <code>null</code>)
      * @param monitor a progress monitor, or <code>null</code>
      *  if progress reporting is not desired
-     * @return the buffer opened for this source file, or <code>null</code>
-     *  if <code>create == false</code> and there is no buffer currently opened
-     *  for this source file
+     * @return the buffer opened for the source file. May return <code>null</code>
+     *  if <code>CREATE_BUFFER == false</code> and there is no buffer currently
+     *  opened for the source file
      * @throws CoreException if this source file does not exist
      *  or if its contents cannot be accessed
      * @throws OperationCanceledException if this method is canceled
      * @see IBuffer
      */
-    IBuffer hBuffer(boolean create, IProgressMonitor monitor)
+    IBuffer hBuffer(IContext context, IProgressMonitor monitor)
         throws CoreException;
 }

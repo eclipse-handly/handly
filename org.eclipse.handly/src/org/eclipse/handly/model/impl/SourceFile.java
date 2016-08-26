@@ -10,6 +10,12 @@
  *******************************************************************************/
 package org.eclipse.handly.model.impl;
 
+import static org.eclipse.handly.context.Contexts.of;
+import static org.eclipse.handly.context.Contexts.with;
+import static org.eclipse.handly.model.Elements.CREATE_BUFFER;
+import static org.eclipse.handly.util.ToStringOptions.FORMAT_STYLE;
+import static org.eclipse.handly.util.ToStringOptions.FormatStyle.MEDIUM;
+
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +39,7 @@ import org.eclipse.handly.snapshot.ISnapshot;
 import org.eclipse.handly.snapshot.ISnapshotProvider;
 import org.eclipse.handly.snapshot.NonExpiringSnapshot;
 import org.eclipse.handly.snapshot.TextFileSnapshot;
+import org.eclipse.handly.util.Property;
 import org.eclipse.handly.util.TextRange;
 
 /**
@@ -42,9 +49,6 @@ public abstract class SourceFile
     extends SourceElement
     implements ISourceFileImpl
 {
-    private static final ThreadLocal<AstHolder> AST_HOLDER =
-        new ThreadLocal<AstHolder>();
-
     private final IFile file;
 
     /**
@@ -79,14 +83,15 @@ public abstract class SourceFile
     }
 
     @Override
-    public final IBuffer hBuffer(boolean create, IProgressMonitor monitor)
+    public final IBuffer hBuffer(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
         WorkingCopyInfo info = hAcquireWorkingCopy();
         if (info == null)
         {
-            if (!create && ITextFileBufferManager.DEFAULT.getTextFileBuffer(
-                file.getFullPath(), LocationKind.IFILE) == null)
+            if (!context.get(CREATE_BUFFER)
+                && ITextFileBufferManager.DEFAULT.getTextFileBuffer(
+                    file.getFullPath(), LocationKind.IFILE) == null)
             {
                 return null;
             }
@@ -117,7 +122,7 @@ public abstract class SourceFile
      * properties will no longer correspond to the underlying resource contents
      * and will no longer be updated by a resource delta processor. Instead,
      * those structure and properties can be explicitly {@link #hReconcile(
-     * boolean, IProgressMonitor) reconciled} with the current contents of
+     * IContext, IProgressMonitor) reconciled} with the current contents of
      * the working copy buffer.
      * </p>
      * <p>
@@ -158,7 +163,7 @@ public abstract class SourceFile
      * properties will no longer correspond to the underlying resource contents
      * and will no longer be updated by a resource delta processor. Instead,
      * those structure and properties can be explicitly {@link #hReconcile(
-     * boolean, IProgressMonitor) reconciled} with the current contents of
+     * IContext, IProgressMonitor) reconciled} with the current contents of
      * the working copy buffer.
      * </p>
      * <p>
@@ -271,7 +276,8 @@ public abstract class SourceFile
     {
         WorkingCopyInfo info = hElementManager().discardWorkingCopyInfo(this);
         if (info == null)
-            throw new IllegalStateException("Not a working copy: " + hPath()); //$NON-NLS-1$
+            throw new IllegalStateException("Not a working copy: " + hToString( //$NON-NLS-1$
+                of(FORMAT_STYLE, MEDIUM)));
         if (info.isDisposed() && info.created)
         {
             hWorkingCopyModeChanged();
@@ -289,8 +295,7 @@ public abstract class SourceFile
         if (info.created)
             return true;
         // special case: wc creation is in progress on the current thread
-        AstHolder astHolder = AST_HOLDER.get();
-        if (astHolder != null && astHolder.getSourceFile().equals(this))
+        if (this.equals(CURRENTLY_RECONCILED.get()))
             return true;
         return false;
     }
@@ -315,8 +320,8 @@ public abstract class SourceFile
     }
 
     @Override
-    public final void hReconcile(boolean force, Object arg,
-        IProgressMonitor monitor) throws CoreException
+    public final void hReconcile(IContext context, IProgressMonitor monitor)
+        throws CoreException
     {
         WorkingCopyInfo info = hAcquireWorkingCopy();
         if (info == null)
@@ -328,7 +333,7 @@ public abstract class SourceFile
                 if (monitor == null)
                     monitor = new NullProgressMonitor();
 
-                info.reconcile(force, arg, monitor);
+                info.reconcile(context, monitor);
             }
             finally
             {
@@ -339,18 +344,10 @@ public abstract class SourceFile
 
     /**
      * Returns a reconcile operation for this source file.
-     * <p>
-     * This method may be used in {@link WorkingCopyInfo} implementations.
-     * Other clients are not intended to invoke this method.
-     * </p>
-     * <p>
-     * Subclasses which extend {@link ReconcileOperation} should override
-     * this method.
-     * </p>
      *
      * @return a reconcile operation for this source file (not <code>null</code>)
      */
-    public ReconcileOperation hReconcileOperation()
+    protected ReconcileOperation hReconcileOperation()
     {
         return new ReconcileOperation();
     }
@@ -380,13 +377,7 @@ public abstract class SourceFile
     }
 
     @Override
-    protected SourceElementBody hNewBody()
-    {
-        return new SourceElementBody();
-    }
-
-    @Override
-    protected void hValidateExistence() throws CoreException
+    protected void hValidateExistence(IContext context) throws CoreException
     {
         if (!hIsWorkingCopy())
         {
@@ -399,17 +390,15 @@ public abstract class SourceFile
     }
 
     @Override
-    protected final void hBuildStructure(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
-        throws CoreException
+    protected final void hBuildStructure(IContext context,
+        IProgressMonitor monitor) throws CoreException
     {
         int ticks = 2;
         monitor.beginTask("", ticks); //$NON-NLS-1$
         try
         {
-            AstHolder astHolder = AST_HOLDER.get();
-
-            if (astHolder == null) // not a working copy
+            Object ast = context.get(SOURCE_AST);
+            if (ast == null) // not a working copy
             {
                 // NOTE: AST is created from the underlying file contents,
                 // not from the buffer contents, since source files that are not
@@ -441,24 +430,30 @@ public abstract class SourceFile
                         throw (CoreException)cause;
                     throw new AssertionError(e); // should never happen
                 }
-                Object ast = hCreateStructuralAst(snapshot.getContents(),
+                ast = hCreateAst(snapshot.getContents(), context,
                     new SubProgressMonitor(monitor, 1));
-                astHolder = new AstHolder(ast, snapshot);
+                context = with(of(SOURCE_CONTENTS, snapshot.getContents()), of(
+                    SOURCE_SNAPSHOT, snapshot.getWrappedSnapshot()), context);
                 --ticks;
             }
 
-            if (!astHolder.getSourceFile().equals(this))
-                throw new AssertionError(); // should never happen
+            hBuildStructure(ast, context, new SubProgressMonitor(monitor,
+                ticks));
 
-            SourceElementBody thisBody = (SourceElementBody)body;
-            String source = astHolder.snapshot.getContents();
-            ISnapshot snapshot = astHolder.snapshot.getWrappedSnapshot();
+            Map<IElement, Object> newElements = context.get(NEW_ELEMENTS);
+            Object body = newElements.get(this);
+            if (body instanceof SourceElementBody)
+            {
+                SourceElementBody thisBody = (SourceElementBody)body;
 
-            hBuildStructure(thisBody, newElements, astHolder.ast, source,
-                new SubProgressMonitor(monitor, ticks));
+                String source = context.get(SOURCE_CONTENTS);
+                if (source != null)
+                    thisBody.setFullRange(new TextRange(0, source.length()));
 
-            thisBody.setFullRange(new TextRange(0, source.length()));
-            setSnapshot(thisBody, snapshot, newElements);
+                ISnapshot snapshot = context.get(SOURCE_SNAPSHOT);
+                if (snapshot != null)
+                    setSnapshot(thisBody, snapshot, newElements);
+            }
         }
         finally
         {
@@ -467,62 +462,77 @@ public abstract class SourceFile
     }
 
     /**
-     * Returns a new AST created from the given source string. The AST may
-     * contain just enough information for computing this source file's
-     * structure and properties as well as of all of its descendant elements.
+     * Returns a new AST created from the given source string. Unless otherwise
+     * indicated by options specified in the given context, the AST may contain
+     * just enough information for computing the structure and properties of
+     * this element and each of its descendant elements.
      *
-     * @param source the source string to parse (never <code>null</code>)
-     * @param monitor a progress monitor (never <code>null</code>)
-     * @return the AST created from the given source string (not <code>null</code>)
+     * @param source the source string to parse (not <code>null</code>)
+     * @param context the operation context (not <code>null</code>)
+     * @param monitor a progress monitor (not <code>null</code>)
+     * @return the AST created from the given source string (never <code>null</code>)
      * @throws CoreException if the AST could not be created
      * @throws OperationCanceledException if this method is canceled
-     * @see #hBuildStructure(SourceElementBody, Map, Object, String, IProgressMonitor)
      */
-    protected abstract Object hCreateStructuralAst(String source,
+    protected abstract Object hCreateAst(String source, IContext context,
         IProgressMonitor monitor) throws CoreException;
 
     /**
-     * Initializes the given body based on the given AST and the given source
-     * string from which the AST was created. Also, creates and initializes
-     * bodies for all descendant elements and puts them into the given
-     * <code>newElements</code> map.
+     * Creates and initializes bodies for this element and for each
+     * of its descendant elements using information in the given AST.
+     * Uses the {@link #NEW_ELEMENTS} map in the given context to associate
+     * the created bodies with their respective elements.
      * <p>
      * The AST is safe to read in the dynamic context of this method call,
-     * but must not be modified. Implementations must not keep references
-     * to any part of the AST or the source string outside the dynamic scope
-     * of the invocation of this method.
+     * but must not be modified. In general, implementations should not keep
+     * references to any part of the AST or the context outside the dynamic
+     * scope of the invocation of this method.
      * </p>
+     * <p>
+     * The given context may provide additional data that this method can use,
+     * including the following:
+     * </p>
+     * <ul>
+     * <li>
+     * {@link #SOURCE_CONTENTS} - Specifies the source string from which the
+     * given AST was created.
+     * </li>
+     * <li>
+     * {@link #SOURCE_SNAPSHOT} - Specifies the source snapshot from which the
+     * given AST was created. The snapshot may expire. Implementations may
+     * keep references to the snapshot outside the dynamic scope of the
+     * invocation of this method.
+     * </li>
+     * </ul>
      *
-     * @param body a new, uninitialized body for this element
-     *  (never <code>null</code>)
-     * @param newElements a map containing handle/body relationships
-     *  (never <code>null</code>)
-     * @param ast the AST created from the given source string
-     *  (never <code>null</code>)
-     * @param source the source string from which the given AST was created
-     *  (never <code>null</code>)
+     * @param ast the AST (never <code>null</code>)
+     * @param context the operation context (never <code>null</code>)
      * @param monitor a progress monitor (never <code>null</code>)
      * @throws OperationCanceledException if this method is canceled
      */
-    protected abstract void hBuildStructure(SourceElementBody body,
-        Map<IElement, Object> newElements, Object ast, String source,
+    protected abstract void hBuildStructure(Object ast, IContext context,
         IProgressMonitor monitor);
 
-    @Override
-    protected void hToStringName(StringBuilder builder, IContext context)
-    {
-        if (hIsWorkingCopy())
-            builder.append("[Working copy] "); //$NON-NLS-1$
-        super.hToStringName(builder, context);
-    }
+    /**
+     * Specifies the source string.
+     * @see #hBuildStructure(Object, IContext, IProgressMonitor)
+     */
+    protected static final Property<String> SOURCE_CONTENTS = Property.get(
+        "sourceContents", String.class); //$NON-NLS-1$
+    /**
+     * Specifies the source snapshot.
+     * @see #hBuildStructure(Object, IContext, IProgressMonitor)
+     */
+    protected static final Property<ISnapshot> SOURCE_SNAPSHOT = Property.get(
+        "sourceSnapshot", ISnapshot.class); //$NON-NLS-1$
 
     @Override
-    protected void hGenerateAncestorBodies(Map<IElement, Object> newElements,
+    protected void hGenerateAncestorBodies(IContext context,
         IProgressMonitor monitor) throws CoreException
     {
         if (hIsWorkingCopy())
             return; // don't open ancestors for a working copy
-        super.hGenerateAncestorBodies(newElements, monitor);
+        super.hGenerateAncestorBodies(context, monitor);
     }
 
     @Override
@@ -533,14 +543,26 @@ public abstract class SourceFile
         return super.hClose(external);
     }
 
+    @Override
+    protected void hToStringName(StringBuilder builder, IContext context)
+    {
+        if (hIsWorkingCopy())
+            builder.append("[Working copy] "); //$NON-NLS-1$
+        super.hToStringName(builder, context);
+    }
+
     private static void setSnapshot(SourceElementBody body, ISnapshot snapshot,
         Map<IElement, Object> newElements)
     {
         body.setSnapshot(snapshot);
         for (IElement child : body.getChildren())
         {
-            setSnapshot((SourceElementBody)newElements.get(child), snapshot,
-                newElements);
+            Object childBody = newElements.get(child);
+            if (childBody instanceof SourceElementBody)
+            {
+                setSnapshot((SourceElementBody)childBody, snapshot,
+                    newElements);
+            }
         }
     }
 
@@ -557,8 +579,29 @@ public abstract class SourceFile
     }
 
     /**
+     * Indicates whether the structure should be rebuilt when reconciling
+     * is forced.
+     * @see ReconcileOperation#reconcile(Object, IContext, IProgressMonitor)
+     */
+    protected static final Property<Boolean> REBUILD_STRUCTURE_IF_FORCED =
+        Property.get("rebuildStructureIfForced", Boolean.class).withDefault( //$NON-NLS-1$
+            false);
+    /**
+     * Indicates whether reconciling was forced, i.e. the working copy buffer
+     * has not been modified since the last time it was reconciled.
+     * @see ReconcileOperation#reconcile(Object, IContext, IProgressMonitor)
+     */
+    static final Property<Boolean> RECONCILING_FORCED = Property.get(
+        "reconcilingForced", Boolean.class).withDefault(false); //$NON-NLS-1$
+
+    private static final Property<Object> SOURCE_AST = Property.get("sourceAst", //$NON-NLS-1$
+        Object.class); // AST to use when building source file structure
+
+    private static final ThreadLocal<SourceFile> CURRENTLY_RECONCILED =
+        new ThreadLocal<SourceFile>(); // source file being currently reconciled
+
+    /**
      * A reconcile operation for this source file.
-     * Intended to be used in {@link WorkingCopyInfo} implementations.
      * <p>
      * This class can be extended to augment the default behavior, e.g.
      * to send out a delta notification indicating the nature of the change
@@ -566,53 +609,78 @@ public abstract class SourceFile
      * </p>
      * @see SourceFile#hReconcileOperation()
      */
-    public class ReconcileOperation
+    protected class ReconcileOperation
     {
         /**
-         * Reconciles this working copy according to the given AST and the given
-         * non-expiring snapshot on which the AST is based. The AST should contain
-         * enough information for computing this working copy's structure and
-         * properties as well as of all its descendant elements.
+         * Reconciles this working copy according to the given AST and
+         * additional data provided in the context.
          * <p>
          * The AST is safe to read in the dynamic context of this method call,
-         * but must not be modified. Implementations must not keep references
-         * to any part of the AST or the snapshot outside the dynamic scope
-         * of the invocation of this method.
+         * but must not be modified. Implementations must not keep references to
+         * any part of the AST or the context outside the dynamic scope of the
+         * invocation of this method.
          * </p>
+         * <p>
+         * The following context options can influence whether the structure
+         * of the working copy gets rebuilt:
+         * </p>
+         * <ul>
+         * <li>
+         * {@link SourceFile#REBUILD_STRUCTURE_IF_FORCED REBUILD_STRUCTURE_IF_FORCED} -
+         * Indicates whether the structure should be rebuilt even if reconciling
+         * was forced, i.e. the working copy buffer has not been modified since
+         * the last time it was reconciled.
+         * </li>
+         * </ul>
+         * <p>
+         * The given context may provide additional data that this method can use,
+         * including the following:
+         * </p>
+         * <ul>
+         * <li>
+         * {@link #SOURCE_CONTENTS} - Specifies the source string from which the
+         * given AST was created.
+         * </li>
+         * <li>
+         * {@link #SOURCE_SNAPSHOT} - Specifies the source snapshot from which the
+         * given AST was created. The snapshot may expire.
+         * </li>
+         * </ul>
          * <p>
          * Subclasses may override this method, but must call the <b>super</b>
          * implementation.
          * </p>
          *
-         * @param ast the working copy AST based on the given snapshot
-         *  (not <code>null</code>)
-         * @param snapshot the non-expiring snapshot on which the given AST
-         *  is based (not <code>null</code>)
-         * @param forced indicates whether reconciling was forced, i.e.
-         *  the working copy buffer has not been modified since the last time
-         *  it was reconciled
+         * @param ast the AST for reconciling (not <code>null</code>)
+         * @param context the operation context (not <code>null</code>)
          * @param monitor a progress monitor, or <code>null</code>
          *  if progress reporting is not desired
          * @throws CoreException if the working copy cannot be reconciled
          * @throws OperationCanceledException if this method is canceled
          */
-        public void reconcile(Object ast, NonExpiringSnapshot snapshot,
-            boolean forced, IProgressMonitor monitor) throws CoreException
+        protected void reconcile(Object ast, IContext context,
+            IProgressMonitor monitor) throws CoreException
         {
+            if (ast == null)
+                throw new IllegalArgumentException();
+            if (context == null)
+                throw new IllegalArgumentException();
             WorkingCopyInfo info = hPeekAtWorkingCopyInfo();
             boolean create = !info.created; // case of wc creation
-            if (create || !forced || shouldRebuildStructureIfForced())
+            if (create || !context.getOrDefault(RECONCILING_FORCED)
+                || context.getOrDefault(REBUILD_STRUCTURE_IF_FORCED))
             {
-                if (AST_HOLDER.get() != null)
+                if (CURRENTLY_RECONCILED.get() != null)
                     throw new AssertionError(); // should never happen
-                AST_HOLDER.set(new AstHolder(ast, snapshot));
+                CURRENTLY_RECONCILED.set(SourceFile.this);
                 try
                 {
-                    hOpen(hNewBody(), true, monitor);
+                    hOpen(with(of(SOURCE_AST, ast), of(FORCE_OPEN, true),
+                        context), monitor);
                 }
                 finally
                 {
-                    AST_HOLDER.set(null);
+                    CURRENTLY_RECONCILED.set(null);
                 }
             }
             if (create)
@@ -621,21 +689,6 @@ public abstract class SourceFile
                     throw new AssertionError(); // should never happen
                 hWorkingCopyModeChanged(); // notify about wc creation
             }
-        }
-
-        /**
-         * Returns whether the structure should be rebuilt when reconciling
-         * is forced (i.e. the working copy buffer has not been modified
-         * since the last time it was reconciled). Default implementation
-         * returns <code>false</code> since typically the structure remains
-         * the same if reconciling is forced. Subclasses may override.
-         *
-         * @return <code>true</code> if the structure should be rebuilt
-         *  when reconciling is forced, <code>false</code> otherwise
-         */
-        protected boolean shouldRebuildStructureIfForced()
-        {
-            return false;
         }
     }
 
@@ -691,23 +744,6 @@ public abstract class SourceFile
                 }
             }
             return false;
-        }
-    }
-
-    private class AstHolder
-    {
-        public final Object ast;
-        public final NonExpiringSnapshot snapshot;
-
-        public AstHolder(Object ast, NonExpiringSnapshot snapshot)
-        {
-            this.ast = ast;
-            this.snapshot = snapshot;
-        }
-
-        public SourceFile getSourceFile()
-        {
-            return SourceFile.this;
         }
     }
 }

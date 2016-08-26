@@ -18,7 +18,6 @@ import static org.eclipse.handly.util.ToStringOptions.FormatStyle.LONG;
 
 import java.text.MessageFormat;
 import java.util.HashSet;
-import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -173,7 +172,7 @@ public class PackageFragment
     }
 
     @Override
-    protected void hValidateExistence() throws CoreException
+    protected void hValidateExistence(IContext context) throws CoreException
     {
         if (!isValidPackageName())
             throw new CoreException(Activator.createErrorStatus(
@@ -188,14 +187,7 @@ public class PackageFragment
     }
 
     @Override
-    protected Object hNewBody()
-    {
-        return new PackageFragmentBody();
-    }
-
-    @Override
-    protected void hBuildStructure(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
+    protected void hBuildStructure(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
         HashSet<ICompilationUnit> children = new HashSet<>();
@@ -221,7 +213,9 @@ public class PackageFragment
                 }
             }
         }
-        ((Body)body).setChildren(children.toArray(Body.NO_CHILDREN));
+        PackageFragmentBody body = new PackageFragmentBody();
+        body.setChildren(children.toArray(Body.NO_CHILDREN));
+        context.get(NEW_ELEMENTS).put(this, body);
     }
 
     @Override
