@@ -101,7 +101,6 @@ class FooFileStructureBuilder
         SourceElementBody body = new SourceElementBody();
         body.setFullRange(getFullRange(var));
         body.setIdentifyingRange(getIdentifyingRange(var));
-        helper.complete(body);
         helper.addChild(parentBody, handle, body);
     }
 
@@ -117,7 +116,6 @@ class FooFileStructureBuilder
         body.setIdentifyingRange(getIdentifyingRange(def));
         body.set(FooDef.PARAMETER_NAMES, def.getParams().toArray(
             new String[arity]));
-        helper.complete(body);
         helper.addChild(parentBody, handle, body);
     }
 

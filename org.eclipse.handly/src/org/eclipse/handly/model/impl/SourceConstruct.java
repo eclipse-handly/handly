@@ -10,13 +10,10 @@
  *******************************************************************************/
 package org.eclipse.handly.model.impl;
 
-import java.util.Map;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.handly.context.IContext;
-import org.eclipse.handly.model.IElement;
 
 /**
  * Common superclass for source constructs.
@@ -99,20 +96,6 @@ public abstract class SourceConstruct
     }
 
     @Override
-    protected final void hValidateExistence() throws CoreException
-    {
-        // The openable parent builds the whole structure and determines child existence
-        throw new AssertionError("This method should not be called"); //$NON-NLS-1$
-    }
-
-    @Override
-    protected final Object hNewBody()
-    {
-        // The openable parent builds the whole structure and knows how to create child bodies
-        return null;
-    }
-
-    @Override
     protected final boolean hIsOpenable()
     {
         // Source constructs are never openable
@@ -120,9 +103,16 @@ public abstract class SourceConstruct
     }
 
     @Override
-    protected final void hBuildStructure(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
+    protected final void hValidateExistence(IContext context)
         throws CoreException
+    {
+        // The openable parent builds the whole structure and determines child existence
+        throw new AssertionError("This method should not be called"); //$NON-NLS-1$
+    }
+
+    @Override
+    protected final void hBuildStructure(IContext context,
+        IProgressMonitor monitor) throws CoreException
     {
         // The openable parent builds the whole structure
         throw new AssertionError("This method should not be called"); //$NON-NLS-1$

@@ -87,7 +87,6 @@ class CompilatonUnitStructureBuilder
         SourceElementBody body = new SourceElementBody();
         body.setFullRange(getTextRange(pkg));
         body.setIdentifyingRange(getTextRange(pkg.getName()));
-        helper.complete(body);
         helper.addChild(parentBody, handle, body);
     }
 
@@ -118,7 +117,6 @@ class CompilatonUnitStructureBuilder
         SourceElementBody body = new SourceElementBody();
         body.setFullRange(getTextRange(importDecl));
         body.setIdentifyingRange(getTextRange(importDecl.getName()));
-        helper.complete(body);
         helper.addChild(parentBody, handle, body);
     }
 
@@ -210,7 +208,6 @@ class CompilatonUnitStructureBuilder
         body.set(Field.TYPE, Signature.createArraySignature(
             AstUtil.getSignature(field.getType()),
             fragment.getExtraDimensions()));
-        helper.complete(body);
         helper.addChild(parentBody, handle, body);
     }
 
@@ -225,7 +222,6 @@ class CompilatonUnitStructureBuilder
         body.set(Field.FLAGS, enumConstant.getModifiers() | Flags.AccEnum);
         body.set(Field.TYPE, Signature.createTypeSignature(
             enumDeclaration.getName().getIdentifier(), false));
-        helper.complete(body);
         helper.addChild(parentBody, handle, body);
     }
 
@@ -267,7 +263,6 @@ class CompilatonUnitStructureBuilder
             thrownExceptions));
         if (method.isConstructor())
             body.set(Method.IS_CONSTRUCTOR, Boolean.TRUE);
-        helper.complete(body);
         helper.addChild(parentBody, handle, body);
     }
 
@@ -282,7 +277,6 @@ class CompilatonUnitStructureBuilder
         body.set(Method.FLAGS, annotationTypeMember.getModifiers());
         body.set(Method.RETURN_TYPE, AstUtil.getSignature(
             annotationTypeMember.getType()));
-        helper.complete(body);
         helper.addChild(parentBody, handle, body);
     }
 

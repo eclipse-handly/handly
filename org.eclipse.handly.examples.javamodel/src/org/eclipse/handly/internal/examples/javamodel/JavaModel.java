@@ -12,7 +12,6 @@ package org.eclipse.handly.internal.examples.javamodel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -132,14 +131,13 @@ public class JavaModel
     }
 
     @Override
-    protected void hValidateExistence() throws CoreException
+    protected void hValidateExistence(IContext context) throws CoreException
     {
         // always exists
     }
 
     @Override
-    protected void hBuildStructure(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
+    protected void hBuildStructure(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
         IProject[] projects = workspace.getRoot().getProjects();
@@ -151,13 +149,9 @@ public class JavaModel
                 javaProjects.add(new JavaProject(this, project));
             }
         }
-        ((Body)body).setChildren(javaProjects.toArray(Body.NO_CHILDREN));
-    }
-
-    @Override
-    protected Object hNewBody()
-    {
-        return new JavaModelBody();
+        JavaModelBody body = new JavaModelBody();
+        body.setChildren(javaProjects.toArray(Body.NO_CHILDREN));
+        context.get(NEW_ELEMENTS).put(this, body);
     }
 
     @Override

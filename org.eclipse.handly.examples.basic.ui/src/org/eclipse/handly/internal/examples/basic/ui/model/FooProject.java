@@ -14,7 +14,6 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -26,6 +25,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.examples.basic.ui.model.IFooFile;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
 import org.eclipse.handly.internal.examples.basic.ui.Activator;
@@ -152,7 +152,7 @@ public class FooProject
     }
 
     @Override
-    protected void hValidateExistence() throws CoreException
+    protected void hValidateExistence(IContext context) throws CoreException
     {
         if (!project.exists())
             throw new CoreException(Activator.createErrorStatus(
@@ -173,8 +173,7 @@ public class FooProject
     }
 
     @Override
-    protected void hBuildStructure(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
+    protected void hBuildStructure(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
         IResource[] members = project.members();
@@ -192,12 +191,8 @@ public class FooProject
                 }
             }
         }
-        ((Body)body).setChildren(fooFiles.toArray(Body.NO_CHILDREN));
-    }
-
-    @Override
-    protected Object hNewBody()
-    {
-        return new FooProjectBody();
+        FooProjectBody body = new FooProjectBody();
+        body.setChildren(fooFiles.toArray(Body.NO_CHILDREN));
+        context.get(NEW_ELEMENTS).put(this, body);
     }
 }

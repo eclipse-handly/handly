@@ -10,10 +10,14 @@
  *******************************************************************************/
 package org.eclipse.handly.xtext.ui.editor;
 
+import static org.eclipse.handly.model.Elements.FORCE_RECONCILING;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.handly.buffer.IBuffer;
+import org.eclipse.handly.context.Context;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.internal.xtext.ui.Activator;
 import org.eclipse.handly.model.impl.WorkingCopyInfo;
 import org.eclipse.handly.snapshot.NonExpiringSnapshot;
@@ -37,8 +41,12 @@ public class XtextWorkingCopyInfo
                 NonExpiringSnapshot snapshot, boolean forced,
                 IProgressMonitor monitor) throws Exception
             {
-                getWorkingCopy().hReconcileOperation().reconcile(resource,
-                    snapshot, forced, monitor);
+                Context context = new Context();
+                context.bind(SOURCE_AST).to(resource);
+                context.bind(SOURCE_CONTENTS).to(snapshot.getContents());
+                context.bind(SOURCE_SNAPSHOT).to(snapshot.getWrappedSnapshot());
+                context.bind(RECONCILING_FORCED).to(forced);
+                basicReconcile(context, monitor);
             }
         };
 
@@ -78,12 +86,13 @@ public class XtextWorkingCopyInfo
     }
 
     @Override
-    protected void reconcile(boolean force, Object arg,
-        IProgressMonitor monitor) throws CoreException
+    protected void reconcile(IContext context, IProgressMonitor monitor)
+        throws CoreException
     {
         try
         {
-            getDocument().reconcile(force, monitor);
+            getDocument().reconcile(context.getOrDefault(FORCE_RECONCILING),
+                monitor);
         }
         catch (OperationCanceledException e)
         {

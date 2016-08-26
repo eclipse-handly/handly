@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.handly.model.impl;
 
+import static org.eclipse.handly.context.Contexts.of;
+import static org.eclipse.handly.model.impl.Element.NEW_ELEMENTS;
+
 import java.io.File;
 import java.util.HashMap;
 
@@ -68,14 +71,14 @@ public class OutOfSyncSourceFileTest
 
     public void testInSync() throws Exception
     {
-        sourceFile.hBuildStructure(new SourceElementBody(), new HashMap<>(),
+        sourceFile.hBuildStructure(of(NEW_ELEMENTS, new HashMap<>()),
             new NullProgressMonitor());
     }
 
     public void testOutOfSync() throws Exception
     {
         assertTrue(localFile.setLastModified(localFile.lastModified() + 1000));
-        sourceFile.hBuildStructure(new SourceElementBody(), new HashMap<>(),
+        sourceFile.hBuildStructure(of(NEW_ELEMENTS, new HashMap<>()),
             new NullProgressMonitor());
     }
 }

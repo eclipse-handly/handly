@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.examples.javamodel.IJavaProject;
 import org.eclipse.handly.examples.javamodel.IPackageFragment;
 import org.eclipse.handly.examples.javamodel.IPackageFragmentRoot;
@@ -251,29 +252,28 @@ public class JavaProject
     }
 
     @Override
-    protected void hValidateExistence() throws CoreException
+    protected void hValidateExistence(IContext context) throws CoreException
     {
         if (!project.exists())
             throw new CoreException(Activator.createErrorStatus(
                 MessageFormat.format(
-                    "Project ''{0}'' does not exist in workspace", getElementName()),
-                null));
+                    "Project ''{0}'' does not exist in workspace",
+                    getElementName()), null));
 
         if (!project.isOpen())
             throw new CoreException(Activator.createErrorStatus(
-                MessageFormat.format("Project ''{0}'' is not open", getElementName()),
-                null));
+                MessageFormat.format("Project ''{0}'' is not open",
+                    getElementName()), null));
 
         if (!project.hasNature(NATURE_ID))
             throw new CoreException(Activator.createErrorStatus(
                 MessageFormat.format(
-                    "Project ''{0}'' does not have the Java nature", getElementName()),
-                null));
+                    "Project ''{0}'' does not have the Java nature",
+                    getElementName()), null));
     }
 
     @Override
-    protected void hBuildStructure(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
+    protected void hBuildStructure(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
         IClasspathEntry[] rawClasspath = getRawClasspath();
@@ -304,12 +304,8 @@ public class JavaProject
             if (root != null)
                 roots.add(root);
         }
-        ((Body)body).setChildren(roots.toArray(Body.NO_CHILDREN));
-    }
-
-    @Override
-    protected Object hNewBody()
-    {
-        return new JavaProjectBody();
+        JavaProjectBody body = new JavaProjectBody();
+        body.setChildren(roots.toArray(Body.NO_CHILDREN));
+        context.get(NEW_ELEMENTS).put(this, body);
     }
 }

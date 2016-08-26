@@ -10,12 +10,10 @@
  *******************************************************************************/
 package org.eclipse.handly.model.impl;
 
-import java.util.Map;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.handly.model.IElement;
+import org.eclipse.handly.context.IContext;
 
 /**
  * A simple source file for tests.
@@ -38,15 +36,14 @@ class SimpleSourceFile
     }
 
     @Override
-    protected Object hCreateStructuralAst(String source,
+    protected Object hCreateAst(String source, IContext context,
         IProgressMonitor monitor) throws CoreException
     {
-        return null;
+        return new Object();
     }
 
     @Override
-    protected void hBuildStructure(SourceElementBody body,
-        Map<IElement, Object> newElements, Object ast, String source,
+    protected void hBuildStructure(Object ast, IContext context,
         IProgressMonitor monitor)
     {
     }

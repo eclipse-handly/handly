@@ -72,21 +72,17 @@ public interface ISourceFileExtension
     /**
      * Makes this working copy consistent with its buffer by updating
      * the element's structure and properties as necessary. Does nothing
-     * if the source file is not in working copy mode. The boolean argument
-     * allows to force reconciling even if the working copy is already
-     * consistent with its buffer.
+     * if the source file is not in working copy mode or if the working copy
+     * is already consistent with its buffer.
      *
-     * @param force indicates whether reconciling has to be performed
-     *  even if the working copy is already consistent with its buffer
      * @param monitor a progress monitor, or <code>null</code>
      *  if progress reporting is not desired
      * @throws CoreException if this working copy cannot be reconciled
      * @throws OperationCanceledException if this method is canceled
      */
-    default void reconcile(boolean force, IProgressMonitor monitor)
-        throws CoreException
+    default void reconcile(IProgressMonitor monitor) throws CoreException
     {
-        Elements.reconcile(this, force, monitor);
+        Elements.reconcile(this, monitor);
     }
 
     /**
@@ -108,38 +104,5 @@ public interface ISourceFileExtension
     default IBuffer getBuffer() throws CoreException
     {
         return Elements.getBuffer(this);
-    }
-
-    /**
-     * Returns the buffer opened for this source file. Note that buffers may
-     * be shared by multiple clients, so the returned buffer may have unsaved
-     * changes if it has been modified by another client.
-     * <p>
-     * The client takes (potentially shared) ownership of the returned buffer
-     * and is responsible for releasing it when finished. The buffer will be
-     * disposed only after it is released by every owner. The buffer must not
-     * be accessed by clients which don't own it.
-     * </p>
-     * <p>
-     * If <code>create == false</code> and there is no buffer currently
-     * opened for this source file, <code>null</code> is returned.
-     * </p>
-     *
-     * @param create indicates whether a new buffer should be created
-     *  if none already exists for this source file
-     * @param monitor a progress monitor, or <code>null</code>
-     *  if progress reporting is not desired
-     * @return the buffer opened for this source file, or <code>null</code>
-     *  if <code>create == false</code> and there is no buffer currently opened
-     *  for this source file
-     * @throws CoreException if this source file does not exist
-     *  or if its contents cannot be accessed
-     * @throws OperationCanceledException if this method is canceled
-     * @see IBuffer
-     */
-    default IBuffer getBuffer(boolean create, IProgressMonitor monitor)
-        throws CoreException
-    {
-        return Elements.getBuffer(this, create, monitor);
     }
 }

@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.handly.refactoring;
 
+import static org.eclipse.handly.context.Contexts.EMPTY_CONTEXT;
 import static org.eclipse.handly.model.Elements.getBuffer;
 import static org.eclipse.handly.model.Elements.getFile;
 import static org.eclipse.handly.model.Elements.getPath;
@@ -227,7 +228,7 @@ public class SourceFileChange
         if (base == null)
             return result; // OK
 
-        try (IBuffer buffer = getBuffer(sourceFile, true, pm))
+        try (IBuffer buffer = getBuffer(sourceFile, EMPTY_CONTEXT, pm))
         {
             if (!base.isEqualTo(buffer.getSnapshot()))
             {
@@ -244,8 +245,8 @@ public class SourceFileChange
     {
         pm.beginTask("", 2); //$NON-NLS-1$
         try (
-            IBuffer buffer = getBuffer(sourceFile, true, new SubProgressMonitor(
-                pm, 1)))
+            IBuffer buffer = getBuffer(sourceFile, EMPTY_CONTEXT,
+                new SubProgressMonitor(pm, 1)))
         {
             BufferChangeWithExcludes change = new BufferChangeWithExcludes(
                 edit);
@@ -296,7 +297,7 @@ public class SourceFileChange
     @Override
     public String getCurrentContent(IProgressMonitor pm) throws CoreException
     {
-        try (IBuffer buffer = getBuffer(sourceFile, true, pm))
+        try (IBuffer buffer = getBuffer(sourceFile, EMPTY_CONTEXT, pm))
         {
             NonExpiringSnapshot snapshot = new NonExpiringSnapshot(buffer);
             return snapshot.getContents();
