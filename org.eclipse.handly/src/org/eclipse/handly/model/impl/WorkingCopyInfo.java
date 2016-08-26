@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.handly.model.impl;
 
+import static org.eclipse.handly.context.Contexts.of;
+import static org.eclipse.handly.model.Elements.FORCE_RECONCILING;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -21,6 +24,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.handly.buffer.IBuffer;
+import org.eclipse.handly.context.IContext;
+import org.eclipse.handly.snapshot.ISnapshot;
+import org.eclipse.handly.util.Property;
 
 /**
  * Holds information related to a working copy.
@@ -122,41 +128,126 @@ public abstract class WorkingCopyInfo
 
     /**
      * Makes the working copy consistent with its buffer by updating the
-     * element's structure and properties as necessary. The boolean argument
-     * allows to force reconciling even if the working copy is already
-     * consistent with its buffer.
+     * element's structure and properties as necessary.
      * <p>
-     * An implementation of this method has to call the working copy's {@link
-     * SourceFile.ReconcileOperation ReconcileOperation} with the appropriate
-     * arguments.
+     * Implementations are encouraged to support the following standard options,
+     * which may be specified in the given context:
+     * </p>
+     * <ul>
+     * <li>
+     * {@link org.eclipse.handly.model.Elements#FORCE_RECONCILING
+     * FORCE_RECONCILING} - Indicates whether reconciling has to be performed
+     * even if the working copy is already consistent with its buffer.
+     * </li>
+     * </ul>
+     * <p>
+     * An implementation of this method is supposed to call {@link
+     * #basicReconcile} with an appropriately augmented context while
+     * providing the necessary synchronization guarantees.
      * </p>
      *
-     * @param force indicates whether reconciling has to be performed
-     *  even if the working copy is already consistent with its buffer
-     * @param arg reserved for model-specific use (may be <code>null</code>)
+     * @param context the operation context (not <code>null</code>)
      * @param monitor a progress monitor, or <code>null</code>
      *  if progress reporting is not desired
      * @throws CoreException if the working copy cannot be reconciled
      * @throws OperationCanceledException if this method is canceled
      */
-    protected abstract void reconcile(boolean force, Object arg,
+    protected abstract void reconcile(IContext context,
         IProgressMonitor monitor) throws CoreException;
 
     /**
-     * Returns the associated working copy.
+     * Reconciles the working copy according to options specified in the given
+     * context.
      * <p>
-     * Note that when {@link #dispose()} is called, this method returns a
-     * source file that is no longer a working copy as far as this working copy
-     * info is concerned, and may even return <code>null</code> if this working
-     * copy info has not been initialized before disposal.
+     * The following context options can influence whether the structure
+     * of the working copy gets rebuilt:
+     * </p>
+     * <ul>
+     * <li>
+     * {@link #RECONCILING_FORCED} - Indicates whether reconciling was forced,
+     * i.e. the working copy buffer has not been modified since the last time
+     * it was reconciled. If <code>false</code> (the default), the structure
+     * will be rebuilt.
+     * </li>
+     * </ul>
+     * <p>
+     * The following context options influence rebuilding of the structure
+     * of the working copy and, if simultaneously present, must be mutually
+     * consistent:
+     * </p>
+     * <ul>
+     * <li>
+     * {@link #SOURCE_AST} - Specifies the AST to use when building the structure.
+     * The AST is safe to read in the dynamic context of this method call, but
+     * must not be modified.
+     * </li>
+     * <li>
+     * {@link #SOURCE_CONTENTS} - Specifies the source string to use when
+     * building the structure.
+     * </li>
+     * </ul>
+     * <p>
+     * At least one of <code>SOURCE_AST</code> or <code>SOURCE_CONTENTS</code>
+     * must have a non-null value in the given context.
+     * </p>
+     * <p>
+     * The given context may provide additional data that this method can use,
+     * including the following:
+     * </p>
+     * <ul>
+     * <li>
+     * {@link #SOURCE_SNAPSHOT} - Specifies the source snapshot from which
+     * <code>SOURCE_AST</code> was created or <code>SOURCE_CONTENTS</code>
+     * was obtained. The snapshot may expire.
+     * </li>
+     * </ul>
+     * <p>
+     * This method makes no guarantees about synchronization of reconcile
+     * operations. Such guarantees must be provided by the {@link #reconcile}
+     * method.
      * </p>
      *
-     * @return the working copy
+     * @param context the operation context (not <code>null</code>)
+     * @param monitor a progress monitor, or <code>null</code>
+     *  if progress reporting is not desired
+     * @throws CoreException if the working copy cannot be reconciled
+     * @throws OperationCanceledException if this method is canceled
      */
-    protected SourceFile getWorkingCopy()
+    protected final void basicReconcile(IContext context,
+        IProgressMonitor monitor) throws CoreException
     {
-        return workingCopy;
+        Object ast = context.get(SOURCE_AST);
+        if (ast == null)
+            ast = workingCopy.hCreateAst(context.get(SOURCE_CONTENTS), context,
+                monitor);
+        workingCopy.hReconcileOperation().reconcile(ast, context, monitor);
     }
+
+    /**
+     * Specifies the source AST for reconciling.
+     * @see #basicReconcile(IContext, IProgressMonitor)
+     */
+    protected static final Property<Object> SOURCE_AST = Property.get(
+        "sourceAst", Object.class); //$NON-NLS-1$
+    /**
+     * Specifies the source string for reconciling.
+     * @see #basicReconcile(IContext, IProgressMonitor)
+     */
+    protected static final Property<String> SOURCE_CONTENTS =
+        SourceFile.SOURCE_CONTENTS;
+    /**
+     * Specifies the source snapshot for reconciling.
+     * @see #basicReconcile(IContext, IProgressMonitor)
+     */
+    protected static final Property<ISnapshot> SOURCE_SNAPSHOT =
+        SourceFile.SOURCE_SNAPSHOT;
+    /**
+     * Indicates whether reconciling was forced, i.e. the working copy buffer
+     * has not been modified since the last time it was reconciled.
+     * @see #basicReconcile(IContext, IProgressMonitor)
+     */
+    protected static final Property<Boolean> RECONCILING_FORCED =
+        SourceFile.RECONCILING_FORCED;
 
     /**
      * Clients should not be exposed to working copy info if it has not been
@@ -239,7 +330,7 @@ public abstract class WorkingCopyInfo
         private void run() throws CoreException
         {
             onInit();
-            reconcile(true/*force*/, null, monitor);
+            reconcile(of(FORCE_RECONCILING, true), monitor);
             if (!created)
             {
                 throw new AssertionError(

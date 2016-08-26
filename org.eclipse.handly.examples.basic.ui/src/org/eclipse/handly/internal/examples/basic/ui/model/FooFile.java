@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.examples.basic.foo.Module;
 import org.eclipse.handly.examples.basic.ui.model.IFooDef;
 import org.eclipse.handly.examples.basic.ui.model.IFooFile;
@@ -35,7 +36,6 @@ import org.eclipse.handly.model.impl.ElementDifferencer;
 import org.eclipse.handly.model.impl.ElementManager;
 import org.eclipse.handly.model.impl.SourceElementBody;
 import org.eclipse.handly.model.impl.SourceFile;
-import org.eclipse.handly.snapshot.NonExpiringSnapshot;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
@@ -97,16 +97,17 @@ public class FooFile
     }
 
     @Override
-    public ReconcileOperation hReconcileOperation()
+    protected ElementManager hElementManager()
     {
-        return new NotifyingReconcileOperation();
+        return FooModelManager.INSTANCE.getElementManager();
     }
 
     @Override
-    protected void hBuildStructure(SourceElementBody body,
-        Map<IElement, Object> newElements, Object ast, String source,
+    protected void hBuildStructure(Object ast, IContext context,
         IProgressMonitor monitor)
     {
+        Map<IElement, Object> newElements = context.get(NEW_ELEMENTS);
+        SourceElementBody body = new SourceElementBody();
         XtextResource resource = (XtextResource)ast;
         IParseResult parseResult = resource.getParseResult();
         if (parseResult != null)
@@ -119,6 +120,7 @@ public class FooFile
                 builder.buildStructure(this, body, (Module)root, monitor);
             }
         }
+        newElements.put(this, body);
     }
 
     /**
@@ -132,7 +134,7 @@ public class FooFile
      * @throws CoreException if resource loading failed
      */
     @Override
-    protected XtextResource hCreateStructuralAst(String source,
+    protected XtextResource hCreateAst(String source, IContext context,
         IProgressMonitor monitor) throws CoreException
     {
         try
@@ -203,16 +205,8 @@ public class FooFile
     }
 
     @Override
-    protected ElementManager hElementManager()
-    {
-        return FooModelManager.INSTANCE.getElementManager();
-    }
-
-    @Override
     protected void hWorkingCopyModeChanged()
     {
-        super.hWorkingCopyModeChanged();
-
         ElementDelta.Builder builder = new ElementDelta.Builder(
             new ElementDelta(getRoot()));
         if (getFile().exists())
@@ -225,17 +219,23 @@ public class FooFile
             ElementChangeEvent.POST_CHANGE, builder.getDelta()));
     }
 
+    @Override
+    protected ReconcileOperation hReconcileOperation()
+    {
+        return new NotifyingReconcileOperation();
+    }
+
     private class NotifyingReconcileOperation
         extends ReconcileOperation
     {
         @Override
-        public void reconcile(Object ast, NonExpiringSnapshot snapshot,
-            boolean forced, IProgressMonitor monitor) throws CoreException
+        protected void reconcile(Object ast, IContext context,
+            IProgressMonitor monitor) throws CoreException
         {
             ElementDifferencer differ = new ElementDifferencer(
                 new ElementDelta.Builder(new ElementDelta(FooFile.this)));
 
-            super.reconcile(ast, snapshot, forced, monitor);
+            super.reconcile(ast, context, monitor);
 
             differ.buildDelta();
             if (!differ.isEmptyDelta())

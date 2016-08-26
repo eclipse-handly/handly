@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.handly.model;
 
+import static org.eclipse.handly.context.Contexts.EMPTY_CONTEXT;
+
 import java.util.Objects;
 
 import org.eclipse.core.resources.IFile;
@@ -315,8 +317,8 @@ public class Elements
 
     /**
      * Returns an object holding cached structure and properties for the
-     * source element, or {@link #NO_SOURCE_ELEMENT_INFO} if source info is not
-     * available.
+     * source element, or {@link #NO_SOURCE_ELEMENT_INFO} if no such info
+     * is available.
      *
      * @param element not <code>null</code>
      * @return {@link ISourceElementInfo} for the element
@@ -340,13 +342,15 @@ public class Elements
     }
 
     /**
-     * A 'null object' indicating that no info is available for source element.
+     * A 'null object' indicating that no info is available for source element,
+     * e.g. because the element does not exist.
      * <p>
      * The instance methods return either <code>null</code> (if allowed
      * by the method contract) or an appropriate 'null object' (such as
      * a zero-length array).
      * </p>
      * @see ISourceElementInfo
+     * @see #getSourceElementInfo2(ISourceElement)
      */
     public static final ISourceElementInfo NO_SOURCE_ELEMENT_INFO =
         new NoSourceElementInfo();
@@ -426,7 +430,7 @@ public class Elements
         {
             try
             {
-                reconcile(sourceFile, false, monitor);
+                reconcile(sourceFile, monitor);
             }
             catch (CoreException e)
             {
@@ -484,23 +488,56 @@ public class Elements
     /**
      * Makes the working copy consistent with its buffer by updating
      * the element's structure and properties as necessary. Does nothing
-     * if the source file is not in working copy mode. The boolean argument
-     * allows to force reconciling even if the working copy is already
-     * consistent with its buffer.
+     * if the source file is not in working copy mode or if the working copy
+     * is already consistent with its buffer.
      *
      * @param sourceFile not <code>null</code>
-     * @param force indicates whether reconciling has to be performed
-     *  even if the working copy is already consistent with its buffer
      * @param monitor a progress monitor, or <code>null</code>
      *  if progress reporting is not desired
      * @throws CoreException if the working copy cannot be reconciled
      * @throws OperationCanceledException if this method is canceled
      */
-    public static void reconcile(ISourceFile sourceFile, boolean force,
+    public static void reconcile(ISourceFile sourceFile,
         IProgressMonitor monitor) throws CoreException
     {
-        ((ISourceFileImpl)sourceFile).hReconcile(force, monitor);
+        reconcile(sourceFile, EMPTY_CONTEXT, monitor);
     }
+
+    /**
+     * Makes the working copy consistent with its buffer by updating
+     * the element's structure and properties as necessary. Does nothing
+     * if the source file is not in working copy mode.
+     * <p>
+     * Implementations are encouraged to support the following standard options,
+     * which may be specified in the given context:
+     * </p>
+     * <ul>
+     * <li>
+     * {@link #FORCE_RECONCILING} - Indicates whether reconciling has to be
+     *  performed even if the working copy is already consistent with its buffer.
+     * </li>
+     * </ul>
+     *
+     * @param sourceFile not <code>null</code>
+     * @param context the operation context (not <code>null</code>)
+     * @param monitor a progress monitor, or <code>null</code>
+     *  if progress reporting is not desired
+     * @throws CoreException if the working copy cannot be reconciled
+     * @throws OperationCanceledException if this method is canceled
+     */
+    public static void reconcile(ISourceFile sourceFile, IContext context,
+        IProgressMonitor monitor) throws CoreException
+    {
+        ((ISourceFileImpl)sourceFile).hReconcile(context, monitor);
+    }
+
+    /**
+     * Indicates whether reconciling has to be performed even if
+     * the working copy is already consistent with its buffer.
+     * @see #reconcile(ISourceFile, IContext, IProgressMonitor)
+     */
+    public static final Property<Boolean> FORCE_RECONCILING = Property.get(
+        "forceReconciling", Boolean.class).withDefault(false); //$NON-NLS-1$
 
     /**
      * Returns the buffer opened for the source file. Note that buffers may
@@ -521,7 +558,7 @@ public class Elements
      */
     public static IBuffer getBuffer(ISourceFile sourceFile) throws CoreException
     {
-        return ((ISourceFileImpl)sourceFile).hBuffer();
+        return getBuffer(sourceFile, EMPTY_CONTEXT, null);
     }
 
     /**
@@ -535,28 +572,41 @@ public class Elements
      * be accessed by clients which don't own it.
      * </p>
      * <p>
-     * If <code>create == false</code> and there is no buffer currently
-     * opened for the source file, <code>null</code> is returned.
+     * Implementations are encouraged to support the following standard options,
+     * which may be specified in the given context:
      * </p>
+     * <ul>
+     * <li>
+     * {@link #CREATE_BUFFER} - Indicates whether a new buffer should be created
+     * if none already exists for the source file.
+     * </li>
+     * </ul>
      *
      * @param sourceFile not <code>null</code>
-     * @param create indicates whether a new buffer should be created
-     *  if none already exists for the source file
+     * @param context the operation context (not <code>null</code>)
      * @param monitor a progress monitor, or <code>null</code>
      *  if progress reporting is not desired
-     * @return the buffer opened for the source file, or <code>null</code>
-     *  if <code>create == false</code> and there is no buffer currently opened
-     *  for the source file
+     * @return the buffer opened for the source file. May return <code>null</code>
+     *  if <code>CREATE_BUFFER == false</code> and there is no buffer currently
+     *  opened for the source file
      * @throws CoreException if the source file does not exist
      *  or if its contents cannot be accessed
      * @throws OperationCanceledException if this method is canceled
      * @see IBuffer
      */
-    public static IBuffer getBuffer(ISourceFile sourceFile, boolean create,
+    public static IBuffer getBuffer(ISourceFile sourceFile, IContext context,
         IProgressMonitor monitor) throws CoreException
     {
-        return ((ISourceFileImpl)sourceFile).hBuffer(create, monitor);
+        return ((ISourceFileImpl)sourceFile).hBuffer(context, monitor);
     }
+
+    /**
+     * Indicates whether a new buffer should be created if none already exists
+     * for the source file.
+     * @see #getBuffer(ISourceFile, IContext, IProgressMonitor)
+     */
+    public static final Property<Boolean> CREATE_BUFFER = Property.get(
+        "createBuffer", Boolean.class).withDefault(true); //$NON-NLS-1$
 
     private Elements()
     {

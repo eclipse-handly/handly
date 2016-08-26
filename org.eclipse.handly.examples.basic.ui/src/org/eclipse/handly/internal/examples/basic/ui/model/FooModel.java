@@ -12,7 +12,6 @@ package org.eclipse.handly.internal.examples.basic.ui.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -132,14 +131,13 @@ public class FooModel
     }
 
     @Override
-    protected void hValidateExistence()
+    protected void hValidateExistence(IContext context)
     {
         // always exists
     }
 
     @Override
-    protected void hBuildStructure(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
+    protected void hBuildStructure(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
         IProject[] projects = workspace.getRoot().getProjects();
@@ -151,6 +149,8 @@ public class FooModel
                 fooProjects.add(new FooProject(this, project));
             }
         }
-        ((Body)body).setChildren(fooProjects.toArray(Body.NO_CHILDREN));
+        Body body = new Body();
+        body.setChildren(fooProjects.toArray(Body.NO_CHILDREN));
+        context.get(NEW_ELEMENTS).put(this, body);
     }
 }

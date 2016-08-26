@@ -15,6 +15,7 @@ import java.net.URI;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.internal.examples.basic.ui.Activator;
 
 /**
@@ -57,7 +58,7 @@ public class ExternalFooProject
     }
 
     @Override
-    protected void hValidateExistence() throws CoreException
+    protected void hValidateExistence(IContext context) throws CoreException
     {
         throw new CoreException(Activator.createErrorStatus(
             "External project never exists", null));

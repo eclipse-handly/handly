@@ -10,11 +10,14 @@
  *******************************************************************************/
 package org.eclipse.handly.model.impl;
 
+import static org.eclipse.handly.context.Contexts.of;
+import static org.eclipse.handly.context.Contexts.with;
+import static org.eclipse.handly.model.Elements.FORCE_RECONCILING;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.handly.buffer.IBuffer;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.snapshot.ISnapshot;
 import org.eclipse.handly.snapshot.NonExpiringSnapshot;
 
@@ -51,49 +54,25 @@ public class DefaultWorkingCopyInfo
     }
 
     @Override
-    protected final void reconcile(boolean force, Object arg,
-        IProgressMonitor monitor) throws CoreException
+    protected final void reconcile(IContext context, IProgressMonitor monitor)
+        throws CoreException
     {
+        if (context.containsKey(SOURCE_AST))
+            throw new IllegalArgumentException(); // just to be safe that we don't pass SOURCE_AST to #basicReconcile accidentally
+
         synchronized (reconcilingLock)
         {
             boolean needsReconciling = needsReconciling();
-            if (needsReconciling || force)
+            if (needsReconciling || context.getOrDefault(FORCE_RECONCILING))
             {
                 NonExpiringSnapshot snapshot = new NonExpiringSnapshot(
                     getBuffer());
-                reconcile(snapshot, !needsReconciling, arg, monitor);
+                basicReconcile(with(of(SOURCE_CONTENTS, snapshot.getContents()),
+                    of(SOURCE_SNAPSHOT, snapshot.getWrappedSnapshot()), of(
+                        RECONCILING_FORCED, !needsReconciling), context),
+                    monitor);
                 reconciledSnapshot = snapshot.getWrappedSnapshot();
             }
-        }
-    }
-
-    /**
-     * Reconciles the associated working copy according to the given
-     * non-expiring snapshot.
-     *
-     * @param snapshot the non-expiring snapshot (not <code>null</code>)
-     * @param forced indicates whether reconciling was forced, i.e.
-     *  the working copy buffer has not been modified since the last time
-     *  it was reconciled
-     * @param arg reserved for model-specific use (may be <code>null</code>)
-     * @param monitor a progress monitor (not <code>null</code>)
-     * @throws CoreException if the working copy cannot be reconciled
-     * @throws OperationCanceledException if this method is canceled
-     */
-    protected void reconcile(NonExpiringSnapshot snapshot, boolean forced,
-        Object arg, IProgressMonitor monitor) throws CoreException
-    {
-        monitor.beginTask("", 2); //$NON-NLS-1$
-        try
-        {
-            Object ast = workingCopy.hCreateStructuralAst(
-                snapshot.getContents(), new SubProgressMonitor(monitor, 1));
-            workingCopy.hReconcileOperation().reconcile(ast, snapshot, forced,
-                new SubProgressMonitor(monitor, 1));
-        }
-        finally
-        {
-            monitor.done();
         }
     }
 }

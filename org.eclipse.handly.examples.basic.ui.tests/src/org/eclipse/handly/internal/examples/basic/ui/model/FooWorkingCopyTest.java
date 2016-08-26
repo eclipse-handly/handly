@@ -81,7 +81,7 @@ public class FooWorkingCopyTest
                 assertEquals(3, defs.length);
                 assertEquals(def, defs[0]);
 
-                workingCopy.reconcile(false, null);
+                workingCopy.reconcile(null);
 
                 assertFalse(def.exists());
 
@@ -120,7 +120,7 @@ public class FooWorkingCopyTest
                 assertEquals(2, vars.length);
                 assertEquals(var2, vars[1]);
 
-                workingCopy.reconcile(false, null);
+                workingCopy.reconcile(null);
 
                 assertFalse(var2.exists());
 
@@ -139,7 +139,7 @@ public class FooWorkingCopyTest
                 vars = workingCopy.getVars();
                 assertEquals(1, vars.length);
 
-                workingCopy.reconcile(false, null);
+                workingCopy.reconcile(null);
 
                 vars = workingCopy.getVars();
                 assertEquals(2, vars.length);
