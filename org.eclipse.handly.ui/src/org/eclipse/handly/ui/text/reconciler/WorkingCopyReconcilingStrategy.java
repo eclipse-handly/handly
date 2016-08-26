@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.handly.ui.text.reconciler;
 
+import static org.eclipse.handly.context.Contexts.of;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ISafeRunnable;
@@ -85,7 +87,8 @@ public class WorkingCopyReconcilingStrategy
     protected void reconcile(ISourceFile workingCopy, boolean initialReconcile)
         throws CoreException
     {
-        Elements.reconcile(workingCopy, true, getProgressMonitor());
+        Elements.reconcile(workingCopy, of(Elements.FORCE_RECONCILING, true),
+            getProgressMonitor());
     }
 
     /**

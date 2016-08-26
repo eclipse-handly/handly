@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.handly.internal.examples.javamodel;
 
+import static org.eclipse.handly.context.Contexts.EMPTY_CONTEXT;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -204,7 +206,8 @@ public class JavaModelManager
         PerProjectInfo info = getPerProjectInfo(project, false);
         if (info == null)
         {
-            new JavaProject(javaModel, project).hValidateExistence();
+            new JavaProject(javaModel, project).hValidateExistence(
+                EMPTY_CONTEXT);
             info = getPerProjectInfo(project, true);
         }
         return info;

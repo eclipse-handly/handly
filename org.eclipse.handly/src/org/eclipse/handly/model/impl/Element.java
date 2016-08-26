@@ -21,6 +21,7 @@ import static org.eclipse.handly.util.ToStringOptions.FormatStyle.FULL;
 import static org.eclipse.handly.util.ToStringOptions.FormatStyle.LONG;
 import static org.eclipse.handly.util.ToStringOptions.FormatStyle.MEDIUM;
 
+import java.text.MessageFormat;
 import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
@@ -35,6 +36,7 @@ import org.eclipse.handly.internal.Activator;
 import org.eclipse.handly.model.Elements;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.util.IndentPolicy;
+import org.eclipse.handly.util.Property;
 import org.eclipse.handly.util.ToStringOptions.FormatStyle;
 
 /**
@@ -52,13 +54,6 @@ public abstract class Element
     extends PlatformObject
     implements IElementImpl
 {
-    /**
-     * Special-purpose value for the <code>body</code> argument of the
-     * {@link #hToStringBody(StringBuilder, Object, IContext) hToStringBody}
-     * method. Indicates that information about the body is not relevant.
-     */
-    protected static final Object NO_BODY = new Object();
-
     private final Element parent;
     private final String name;
 
@@ -143,7 +138,7 @@ public abstract class Element
             return false;
         try
         {
-            hValidateExistence();
+            hValidateExistence(EMPTY_CONTEXT);
             return true;
         }
         catch (CoreException e)
@@ -259,6 +254,13 @@ public abstract class Element
     }
 
     /**
+     * Special-purpose value for the <code>body</code> argument of the
+     * {@link #hToStringBody(StringBuilder, Object, IContext) hToStringBody}
+     * method. Indicates that information about the body is not relevant.
+     */
+    protected static final Object NO_BODY = new Object();
+
+    /**
      * Debugging purposes.
      */
     protected void hToStringBody(StringBuilder builder, Object body,
@@ -306,27 +308,34 @@ public abstract class Element
      * explicitly verify their existence.
      * </p>
      *
+     * @param context the operation context (never <code>null</code>)
      * @throws CoreException if this element shall not exist
      */
-    protected abstract void hValidateExistence() throws CoreException;
+    protected abstract void hValidateExistence(IContext context)
+        throws CoreException;
 
     /**
-     * Initializes the given body based on this element's current contents.
-     * Also, creates and initializes bodies for all non-{@link #hIsOpenable()
-     * openable} descendants and puts them into the given map.
+     * A map containing handle/body relationships.
+     * @see #hBuildStructure(IContext, IProgressMonitor)
+     */
+    protected static final Property<Map<IElement, Object>> NEW_ELEMENTS =
+        new Property<Map<IElement, Object>>("newElements") //$NON-NLS-1$
+        {};
+
+    /**
+     * Creates and initializes bodies for this element and for each non-{@link
+     * #hIsOpenable() openable} child element (and their non-openable children,
+     * recursively). Uses the {@link #NEW_ELEMENTS} map in the given context
+     * to associate the created bodies with their respective elements.
      *
-     * @param body a new, uninitialized body for this element
-     *  (never <code>null</code>)
-     * @param newElements a map containing handle/body relationships
-     *  (never <code>null</code>)
+     * @param context the operation context (never <code>null</code>)
      * @param monitor a progress monitor (never <code>null</code>)
      * @throws CoreException if an exception occurs while accessing
      *  the element's corresponding resource
      * @throws OperationCanceledException if this method is canceled
      */
-    protected abstract void hBuildStructure(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
-        throws CoreException;
+    protected abstract void hBuildStructure(IContext context,
+        IProgressMonitor monitor) throws CoreException;
 
     /**
      * Returns the cached body for this element. If this element is not
@@ -339,7 +348,7 @@ public abstract class Element
      */
     protected final Object hBody() throws CoreException
     {
-        return hBody(null);
+        return hBody(EMPTY_CONTEXT, null);
     }
 
     /**
@@ -347,6 +356,7 @@ public abstract class Element
      * already present in the body cache, its body will be created,
      * initialized, and put in the cache.
      *
+     * @param context the operation context (not <code>null</code>)
      * @param monitor a progress monitor, or <code>null</code>
      *  if progress reporting is not desired
      * @return the cached body for this element (never <code>null</code>)
@@ -354,26 +364,13 @@ public abstract class Element
      *  exception occurs while accessing its corresponding resource
      * @throws OperationCanceledException if this method is canceled
      */
-    protected final Object hBody(IProgressMonitor monitor) throws CoreException
+    protected final Object hBody(IContext context, IProgressMonitor monitor)
+        throws CoreException
     {
         Object body = hFindBody();
         if (body != null)
             return body;
-        return hOpen(hNewBody(), false, monitor);
-    }
-
-    /**
-     * Returns a new, uninitialized body for this element, or <code>null</code>
-     * if the body for the element is to be created by the openable parent.
-     *
-     * @return a new body for this element, or <code>null</code> if the body
-     *  for the element is to be created by the openable parent
-     */
-    protected Object hNewBody()
-    {
-        if (!hIsOpenable())
-            return null;
-        return new Body();
+        return hOpen(context, monitor);
     }
 
     /**
@@ -389,14 +386,27 @@ public abstract class Element
     }
 
     /**
+     * Indicates whether to forcibly reopen this element if it is already open
+     * (i.e. already present in the body cache).
+     */
+    static final Property<Boolean> FORCE_OPEN = Property.get("forceOpen", //$NON-NLS-1$
+        Boolean.class).withDefault(false);
+
+    /**
      * Creates and initializes bodies for this element, its ancestors and its
      * children as necessary and then atomically puts them into the body cache.
      * Returns the cached body for this element.
+     * <p>
+     * The following context options influence the operation's behavior:
+     * </p>
+     * <ul>
+     * <li>
+     * {@link #FORCE_OPEN} - Indicates whether to forcibly reopen this element
+     * if it is already open (i.e. already present in the body cache).
+     * </li>
+     * </ul>
      *
-     * @param body a new body to be initialized for this element, or
-     *  <code>null</code> if the body is to be created by the openable parent
-     * @param force whether to forcibly reopen this element if it is already
-     *  open (i.e. already present in the body cache)
+     * @param context the operation context (not <code>null</code>)
      * @param monitor a progress monitor, or <code>null</code>
      *  if progress reporting is not desired
      * @return the cached body for this element (never <code>null</code>)
@@ -404,7 +414,7 @@ public abstract class Element
      *  exception occurs while accessing its corresponding resource
      * @throws OperationCanceledException if this method is canceled
      */
-    final Object hOpen(Object body, boolean force, IProgressMonitor monitor)
+    final Object hOpen(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
         if (monitor == null)
@@ -415,12 +425,9 @@ public abstract class Element
         {
             Map<IElement, Object> newElements =
                 elementManager.getTemporaryCache();
-            hGenerateBodies(body, newElements, monitor);
-            if (body == null)
-            {
-                // a body for this element was to be created by the openable parent
-                body = newElements.get(this);
-            }
+            hGenerateBodies(with(of(NEW_ELEMENTS, newElements), context),
+                monitor);
+            Object body = newElements.get(this);
             if (body == null)
             {
                 // the openable parent did not create a body for this element
@@ -431,7 +438,7 @@ public abstract class Element
                 throw new OperationCanceledException();
             if (!hadTemporaryCache)
             {
-                if (force)
+                if (context.getOrDefault(FORCE_OPEN))
                     elementManager.put(this, newElements);
                 else
                 {
@@ -441,6 +448,7 @@ public abstract class Element
                         body = existingBody;
                 }
             }
+            return body;
         }
         finally
         {
@@ -449,7 +457,6 @@ public abstract class Element
                 elementManager.resetTemporaryCache();
             }
         }
-        return body;
     }
 
     /**
@@ -492,85 +499,58 @@ public abstract class Element
 
     /**
      * Creates and initializes bodies for ancestors of this element
-     * as necessary and puts them into the given map.
+     * as necessary and puts them into the {@link #NEW_ELEMENTS} map
+     * available in the given context.
      *
-     * @param newElements a map containing handle/body relationships
-     *  (never <code>null</code>)
+     * @param context the operation context (never <code>null</code>)
      * @param monitor a progress monitor (never <code>null</code>)
      * @throws CoreException if an ancestor does not exist or if an
      *  exception occurs while accessing its corresponding resource
      * @throws OperationCanceledException if this method is canceled
      */
-    protected void hGenerateAncestorBodies(Map<IElement, Object> newElements,
+    protected void hGenerateAncestorBodies(IContext context,
         IProgressMonitor monitor) throws CoreException
     {
         Element openableParent = hOpenableParent();
         if (openableParent != null && openableParent.hFindBody() == null)
-        {
-            openableParent.hGenerateBodies(openableParent.hNewBody(),
-                newElements, monitor);
-        }
+            openableParent.hGenerateBodies(context, monitor);
     }
 
     /**
      * Creates and initializes bodies for this element, its ancestors
-     * and its children as necessary and puts them into the given map.
+     * and its children as necessary and puts them into the {@link
+     * #NEW_ELEMENTS} map available in the given context.
      *
-     * @param body a new body to be initialized for this element, or
-     *  <code>null</code> if the body is to be created by the openable parent
-     * @param newElements a map containing handle/body relationships
-     *  (never <code>null</code>)
+     * @param context the operation context (never <code>null</code>)
      * @param monitor a progress monitor (never <code>null</code>)
      * @throws CoreException if this element does not exist or if an
      *  exception occurs while accessing its corresponding resource
      * @throws OperationCanceledException if this method is canceled
      */
-    protected final void hGenerateBodies(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
-        throws CoreException
+    protected final void hGenerateBodies(IContext context,
+        IProgressMonitor monitor) throws CoreException
     {
         monitor.beginTask("", 2); //$NON-NLS-1$
         try
         {
-            if (hIsOpenable())
-            {
-                if (body == null)
-                    throw new IllegalArgumentException();
-            }
-            else
-            {
-                if (body != null)
-                    throw new IllegalArgumentException();
-            }
-
-            hGenerateAncestorBodies(newElements, new SubProgressMonitor(monitor,
+            hGenerateAncestorBodies(context, new SubProgressMonitor(monitor,
                 1));
 
-            if (body != null)
+            if (hIsOpenable())
             {
-                hValidateExistence();
+                hValidateExistence(context);
 
                 if (monitor.isCanceled())
                     throw new OperationCanceledException();
 
-                // put the body before building the structure so that
-                // questions to the handle behave as if the element existed
-                newElements.put(this, body);
+                hBuildStructure(context, new SubProgressMonitor(monitor, 1));
 
-                try
+                Object body = context.get(NEW_ELEMENTS).get(this);
+                if (body == null)
                 {
-                    hBuildStructure(body, newElements, new SubProgressMonitor(
-                        monitor, 1));
-                }
-                catch (CoreException e)
-                {
-                    newElements.remove(this);
-                    throw e;
-                }
-                catch (RuntimeException e)
-                {
-                    newElements.remove(this);
-                    throw e;
+                    throw new AssertionError(MessageFormat.format(
+                        "No body for {0}. Incorrect {1}#hBuildStructure implementation?", //$NON-NLS-1$
+                        toString(), getClass().getSimpleName()));
                 }
             }
         }

@@ -476,7 +476,7 @@ public class HandlyXtextEditorCallback
                 {
                     try
                     {
-                        reconcile(sourceFile, false, monitor);
+                        reconcile(sourceFile, monitor);
                     }
                     catch (CoreException e)
                     {
