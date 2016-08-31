@@ -32,14 +32,13 @@ import org.eclipse.handly.internal.examples.basic.ui.Activator;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Element;
-import org.eclipse.handly.model.impl.ElementManager;
 
 /**
  * Represents a Foo project.
  */
 public class FooProject
     extends Element
-    implements IFooProject
+    implements IFooProject, IFooElementInternal
 {
     private final IProject project;
 
@@ -143,12 +142,6 @@ public class FooProject
     public IResource hResource()
     {
         return project;
-    }
-
-    @Override
-    protected ElementManager hElementManager()
-    {
-        return FooModelManager.INSTANCE.getElementManager();
     }
 
     @Override

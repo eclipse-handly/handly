@@ -103,6 +103,22 @@ public class Elements
     }
 
     /**
+     * Returns the model that owns the element. This is a handle-only method.
+     * <p>
+     * Note that the relationship between an element and its owing model does
+     * not change over the lifetime of an element.
+     * </p>
+     *
+     * @param element not <code>null</code>
+     * @return the element's model (never <code>null</code>)
+     * @throws IllegalStateException if the model is no longer accessible
+     */
+    public static IModel getModel(IElement element)
+    {
+        return ((IElementImpl)element).hModel();
+    }
+
+    /**
      * Returns the innermost resource enclosing the element, or <code>null</code>
      * if the element is not enclosed in a workspace resource.
      * This is a handle-only method.

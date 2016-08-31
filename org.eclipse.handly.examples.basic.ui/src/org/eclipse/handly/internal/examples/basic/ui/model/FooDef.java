@@ -13,7 +13,6 @@ package org.eclipse.handly.internal.examples.basic.ui.model;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.examples.basic.ui.model.IFooDef;
-import org.eclipse.handly.model.impl.ElementManager;
 import org.eclipse.handly.model.impl.SourceConstruct;
 
 /**
@@ -21,7 +20,7 @@ import org.eclipse.handly.model.impl.SourceConstruct;
  */
 public class FooDef
     extends SourceConstruct
-    implements IFooDef
+    implements IFooDef, IFooElementInternal
 {
     private final int arity;
 
@@ -70,13 +69,6 @@ public class FooDef
         return result;
     }
 
-    @Override
-    protected ElementManager hElementManager()
-    {
-        return FooModelManager.INSTANCE.getElementManager();
-    }
-
-    @Override
     protected void hToStringName(StringBuilder builder, IContext context)
     {
         super.hToStringName(builder, context);

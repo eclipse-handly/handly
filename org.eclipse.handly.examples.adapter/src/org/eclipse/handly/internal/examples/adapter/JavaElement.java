@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.PlatformObject;
 import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.model.IElement;
+import org.eclipse.handly.model.IModel;
 import org.eclipse.handly.model.impl.IElementImpl;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -93,6 +94,12 @@ public class JavaElement
     public IElement hRoot()
     {
         return create(javaElement.getJavaModel());
+    }
+
+    @Override
+    public IModel hModel()
+    {
+        return AdapterModelManager.INSTANCE;
     }
 
     @Override

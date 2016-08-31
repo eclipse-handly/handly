@@ -12,7 +12,6 @@ package org.eclipse.handly.internal.examples.javamodel;
 
 import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.examples.javamodel.IPackageDeclaration;
-import org.eclipse.handly.model.impl.ElementManager;
 import org.eclipse.handly.model.impl.SourceConstruct;
 
 /**
@@ -20,7 +19,7 @@ import org.eclipse.handly.model.impl.SourceConstruct;
  */
 public class PackageDeclaration
     extends SourceConstruct
-    implements IPackageDeclaration
+    implements IPackageDeclaration, IJavaElementInternal
 {
     /**
      * Creates a handle for a package declaration with the given parent element
@@ -34,12 +33,6 @@ public class PackageDeclaration
         super(parent, name);
         if (name == null)
             throw new IllegalArgumentException();
-    }
-
-    @Override
-    protected ElementManager hElementManager()
-    {
-        return JavaModelManager.INSTANCE.getElementManager();
     }
 
     @Override

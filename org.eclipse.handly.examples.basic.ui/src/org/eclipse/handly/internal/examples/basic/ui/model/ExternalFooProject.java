@@ -37,7 +37,7 @@ public class ExternalFooProject
      */
     public ExternalFooProject()
     {
-        super(FooModelManager.INSTANCE.getFooModel(),
+        super(FooModelManager.INSTANCE.getModel(),
             ResourcesPlugin.getWorkspace().getRoot().getProject(
                 EXTERNAL_PROJECT_NAME));
     }

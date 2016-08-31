@@ -230,7 +230,7 @@ class DeltaProcessingState
 
     IJavaModel getJavaModel()
     {
-        return JavaModelManager.INSTANCE.getJavaModel();
+        return JavaModelManager.INSTANCE.getModel();
     }
 
     private static class ClasspathInfo

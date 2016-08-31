@@ -34,6 +34,7 @@ import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.internal.Activator;
 import org.eclipse.handly.model.Elements;
 import org.eclipse.handly.model.IElement;
+import org.eclipse.handly.model.IModel;
 import org.eclipse.handly.util.IndentPolicy;
 import org.eclipse.handly.util.ToStringOptions.FormatStyle;
 
@@ -50,7 +51,7 @@ import org.eclipse.handly.util.ToStringOptions.FormatStyle;
  */
 public abstract class Element
     extends PlatformObject
-    implements IElementImpl
+    implements IElementImpl, IModelManager.Provider
 {
     /**
      * Special-purpose value for the <code>body</code> argument of the
@@ -88,6 +89,8 @@ public abstract class Element
             return false;
         Element other = (Element)obj;
         if (!hElementType().equals(other.hElementType()))
+            return false;
+        if (!hModel().equals(other.hModel()))
             return false;
         if (parent == null)
         {
@@ -132,6 +135,12 @@ public abstract class Element
     public final Element hParent()
     {
         return parent;
+    }
+
+    @Override
+    public IModel hModel()
+    {
+        return hModelManager().getModel();
     }
 
     @Override
@@ -295,7 +304,10 @@ public abstract class Element
      *
      * @return the element manager for this element (never <code>null</code>)
      */
-    protected abstract ElementManager hElementManager();
+    protected ElementManager hElementManager()
+    {
+        return hModelManager().getElementManager();
+    }
 
     /**
      * Validates if the element represented by the handle may be "opened",

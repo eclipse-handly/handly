@@ -23,7 +23,7 @@ public class ElementDeltaTest
      */
     public void testBug456060()
     {
-        SimpleElement root = new SimpleElement(null, "root");
+        SimpleElement root = new SimpleElement(null, "root", new SimpleModel());
         ElementDelta.Builder builder = new ElementDelta.Builder(
             new ElementDelta(root));
         builder.added(root.getChild("A"));
@@ -36,7 +36,8 @@ public class ElementDeltaTest
 
     public void testBadlyFormedDeltaTree()
     {
-        SimpleElement parent = new SimpleElement(null, "parent");
+        SimpleElement parent = new SimpleElement(null, "parent",
+            new SimpleModel());
         SimpleElement child = parent.getChild("child");
         ElementDelta.Builder builder = new ElementDelta.Builder(
             new ElementDelta(child));

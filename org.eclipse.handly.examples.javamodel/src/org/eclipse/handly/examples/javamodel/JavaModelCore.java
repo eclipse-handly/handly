@@ -29,7 +29,7 @@ public class JavaModelCore
      */
     public static IJavaModel getJavaModel()
     {
-        return JavaModelManager.INSTANCE.getJavaModel();
+        return JavaModelManager.INSTANCE.getModel();
     }
 
     /**

@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.examples.javamodel.IMember;
 import org.eclipse.handly.examples.javamodel.IType;
 import org.eclipse.handly.model.impl.Element;
-import org.eclipse.handly.model.impl.ElementManager;
 import org.eclipse.handly.model.impl.SourceConstruct;
 
 /**
@@ -22,7 +21,7 @@ import org.eclipse.handly.model.impl.SourceConstruct;
  */
 public abstract class Member
     extends SourceConstruct
-    implements IMember
+    implements IMember, IJavaElementInternal
 {
     static final String[] NO_STRINGS = new String[0];
 
@@ -51,11 +50,5 @@ public abstract class Member
     public int getFlags() throws CoreException
     {
         return getSourceElementInfo().get(FLAGS);
-    }
-
-    @Override
-    protected ElementManager hElementManager()
-    {
-        return JavaModelManager.INSTANCE.getElementManager();
     }
 }

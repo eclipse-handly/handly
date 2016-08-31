@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.handly.model.IElement;
+import org.eclipse.handly.model.IModel;
 
 /**
  * A simple source file for tests.
@@ -24,6 +25,8 @@ import org.eclipse.handly.model.IElement;
 class SimpleSourceFile
     extends SourceFile
 {
+    private final IModel model;
+
     /**
      * Constructs a handle for a source file with the given parent element and
      * the given underlying workspace file.
@@ -31,10 +34,24 @@ class SimpleSourceFile
      * @param parent the parent of the element,
      *  or <code>null</code> if the element has no parent
      * @param file the workspace file underlying the element (not <code>null</code>)
+     * @param model the model the element belongs to
      */
-    public SimpleSourceFile(Element parent, IFile file)
+    public SimpleSourceFile(Element parent, IFile file, IModel model)
     {
         super(parent, file);
+        this.model = model;
+    }
+
+    @Override
+    public IModel hModel()
+    {
+        return model;
+    }
+
+    @Override
+    public IModelManager hModelManager()
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -49,11 +66,5 @@ class SimpleSourceFile
         Map<IElement, Object> newElements, Object ast, String source,
         IProgressMonitor monitor)
     {
-    }
-
-    @Override
-    protected ElementManager hElementManager()
-    {
-        throw new UnsupportedOperationException();
     }
 }

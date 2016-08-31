@@ -34,7 +34,6 @@ import org.eclipse.handly.examples.javamodel.IPackageFragment;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Element;
-import org.eclipse.handly.model.impl.ElementManager;
 import org.eclipse.handly.util.IndentPolicy;
 import org.eclipse.jdt.core.JavaConventions;
 import org.eclipse.jdt.core.JavaCore;
@@ -45,7 +44,7 @@ import org.eclipse.jdt.core.Signature;
  */
 public class PackageFragment
     extends Element
-    implements IPackageFragment
+    implements IPackageFragment, IJavaElementInternal
 {
     private final String[] simpleNames;
 
@@ -164,12 +163,6 @@ public class PackageFragment
         for (String simpleName : simpleNames)
             path = path.append(simpleName);
         return ((IContainer)getParent().getResource()).getFolder(path);
-    }
-
-    @Override
-    protected ElementManager hElementManager()
-    {
-        return JavaModelManager.INSTANCE.getElementManager();
     }
 
     @Override

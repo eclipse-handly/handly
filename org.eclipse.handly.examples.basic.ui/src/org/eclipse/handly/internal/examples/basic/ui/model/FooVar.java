@@ -11,7 +11,6 @@
 package org.eclipse.handly.internal.examples.basic.ui.model;
 
 import org.eclipse.handly.examples.basic.ui.model.IFooVar;
-import org.eclipse.handly.model.impl.ElementManager;
 import org.eclipse.handly.model.impl.SourceConstruct;
 
 /**
@@ -19,7 +18,7 @@ import org.eclipse.handly.model.impl.SourceConstruct;
  */
 public class FooVar
     extends SourceConstruct
-    implements IFooVar
+    implements IFooVar, IFooElementInternal
 {
     /**
      * Creates a handle for a variable with the given parent element
@@ -33,11 +32,5 @@ public class FooVar
         super(parent, name);
         if (name == null)
             throw new IllegalArgumentException();
-    }
-
-    @Override
-    protected ElementManager hElementManager()
-    {
-        return FooModelManager.INSTANCE.getElementManager();
     }
 }

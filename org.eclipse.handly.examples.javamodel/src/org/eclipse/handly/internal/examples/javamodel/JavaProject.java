@@ -26,7 +26,6 @@ import org.eclipse.handly.examples.javamodel.IPackageFragmentRoot;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Element;
-import org.eclipse.handly.model.impl.ElementManager;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 
@@ -35,7 +34,7 @@ import org.eclipse.jdt.core.JavaCore;
  */
 public class JavaProject
     extends Element
-    implements IJavaProject
+    implements IJavaProject, IJavaElementInternal
 {
     private final IProject project;
 
@@ -242,12 +241,6 @@ public class JavaProject
     public IResource hResource()
     {
         return project;
-    }
-
-    @Override
-    protected ElementManager hElementManager()
-    {
-        return JavaModelManager.INSTANCE.getElementManager();
     }
 
     @Override

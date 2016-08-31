@@ -27,7 +27,7 @@ public class FooModelCore
      */
     public static IFooModel getFooModel()
     {
-        return FooModelManager.INSTANCE.getFooModel();
+        return FooModelManager.INSTANCE.getModel();
     }
 
     /**

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.handly.internal.examples.basic.ui.model;
 
+import static org.eclipse.handly.context.Contexts.EMPTY_CONTEXT;
+
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ISaveContext;
@@ -25,11 +27,13 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.internal.examples.basic.ui.Activator;
 import org.eclipse.handly.model.IElementChangeEvent;
 import org.eclipse.handly.model.IElementChangeListener;
 import org.eclipse.handly.model.impl.ElementChangeEvent;
 import org.eclipse.handly.model.impl.ElementManager;
+import org.eclipse.handly.model.impl.IModelManager;
 
 /**
  * The manager for the Foo Model.
@@ -37,7 +41,7 @@ import org.eclipse.handly.model.impl.ElementManager;
  * @threadsafe This class is intended to be thread-safe
  */
 public class FooModelManager
-    implements IResourceChangeListener
+    implements IModelManager, IResourceChangeListener
 {
     /**
      * The sole instance of the manager.
@@ -99,18 +103,25 @@ public class FooModelManager
         }
     }
 
-    public FooModel getFooModel()
+    @Override
+    public FooModel getModel()
     {
         if (fooModel == null)
             throw new IllegalStateException();
         return fooModel;
     }
 
+    @Override
     public ElementManager getElementManager()
     {
         if (elementManager == null)
             throw new IllegalStateException();
         return elementManager;
+    }
+
+    public IContext getModelContext()
+    {
+        return EMPTY_CONTEXT;
     }
 
     public void addElementChangeListener(IElementChangeListener listener)

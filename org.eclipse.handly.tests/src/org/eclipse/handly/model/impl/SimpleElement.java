@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.handly.model.IElement;
+import org.eclipse.handly.model.IModel;
 
 /**
  * A simple element for tests.
@@ -24,6 +25,8 @@ import org.eclipse.handly.model.IElement;
 class SimpleElement
     extends Element
 {
+    private final IModel model;
+
     /**
      * Constructs a handle for an element with the given parent element
      * and the given name.
@@ -31,10 +34,12 @@ class SimpleElement
      * @param parent the parent of the element,
      *  or <code>null</code> if the element has no parent
      * @param name the name of the element
+     * @param model the model the element belongs to
      */
-    public SimpleElement(Element parent, String name)
+    public SimpleElement(Element parent, String name, IModel model)
     {
         super(parent, name);
+        this.model = model;
     }
 
     /**
@@ -46,7 +51,13 @@ class SimpleElement
      */
     public SimpleElement getChild(String name)
     {
-        return new SimpleElement(this, name);
+        return new SimpleElement(this, name, model);
+    }
+
+    @Override
+    public IModel hModel()
+    {
+        return model;
     }
 
     @Override
@@ -56,7 +67,7 @@ class SimpleElement
     }
 
     @Override
-    protected ElementManager hElementManager()
+    public IModelManager hModelManager()
     {
         throw new UnsupportedOperationException();
     }

@@ -22,7 +22,6 @@ import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.examples.javamodel.IImportContainer;
 import org.eclipse.handly.examples.javamodel.IImportDeclaration;
 import org.eclipse.handly.model.IElement;
-import org.eclipse.handly.model.impl.ElementManager;
 import org.eclipse.handly.model.impl.SourceConstruct;
 import org.eclipse.handly.util.ToStringOptions.FormatStyle;
 
@@ -31,7 +30,7 @@ import org.eclipse.handly.util.ToStringOptions.FormatStyle;
  */
 public class ImportContainer
     extends SourceConstruct
-    implements IImportContainer
+    implements IImportContainer, IJavaElementInternal
 {
     /**
      * Creates a handle for an import container  with the given parent element.
@@ -57,12 +56,6 @@ public class ImportContainer
         IImportDeclaration[] result = new IImportDeclaration[length];
         System.arraycopy(children, 0, result, 0, length);
         return result;
-    }
-
-    @Override
-    protected ElementManager hElementManager()
-    {
-        return JavaModelManager.INSTANCE.getElementManager();
     }
 
     @Override

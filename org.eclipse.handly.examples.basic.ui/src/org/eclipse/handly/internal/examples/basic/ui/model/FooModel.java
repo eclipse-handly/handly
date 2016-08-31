@@ -24,16 +24,16 @@ import org.eclipse.handly.examples.basic.ui.model.IFooModel;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.IElementChangeListener;
+import org.eclipse.handly.model.IModel;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Element;
-import org.eclipse.handly.model.impl.ElementManager;
 
 /**
  * Represents the root Foo element corresponding to the workspace.
  */
 public class FooModel
     extends Element
-    implements IFooModel
+    implements IFooModel, IFooElementInternal, IModel
 {
     private final IWorkspace workspace;
 
@@ -50,6 +50,18 @@ public class FooModel
         if (workspace == null)
             throw new IllegalArgumentException();
         this.workspace = workspace;
+    }
+
+    @Override
+    public int getApiLevel()
+    {
+        return ApiLevel.CURRENT;
+    }
+
+    @Override
+    public IContext getModelContext()
+    {
+        return FooModelManager.INSTANCE.getModelContext();
     }
 
     @Override
@@ -123,12 +135,6 @@ public class FooModel
     protected void hToStringName(StringBuilder builder, IContext context)
     {
         builder.append("FooModel"); //$NON-NLS-1$
-    }
-
-    @Override
-    protected ElementManager hElementManager()
-    {
-        return FooModelManager.INSTANCE.getElementManager();
     }
 
     @Override

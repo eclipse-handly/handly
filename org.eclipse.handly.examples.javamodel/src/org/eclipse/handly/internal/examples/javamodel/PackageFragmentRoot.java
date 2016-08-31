@@ -27,7 +27,6 @@ import org.eclipse.handly.examples.javamodel.IPackageFragmentRoot;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Element;
-import org.eclipse.handly.model.impl.ElementManager;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaConventions;
 import org.eclipse.jdt.core.JavaCore;
@@ -37,7 +36,7 @@ import org.eclipse.jdt.core.JavaCore;
  */
 public class PackageFragmentRoot
     extends Element
-    implements IPackageFragmentRoot
+    implements IPackageFragmentRoot, IJavaElementInternal
 {
     private final IResource resource;
 
@@ -111,12 +110,6 @@ public class PackageFragmentRoot
     public IResource hResource()
     {
         return resource;
-    }
-
-    @Override
-    protected ElementManager hElementManager()
-    {
-        return JavaModelManager.INSTANCE.getElementManager();
     }
 
     @Override

@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.model.Elements;
 import org.eclipse.handly.model.IElement;
+import org.eclipse.handly.model.IModel;
 
 /**
  * All {@link IElement}s must implement this interface.
@@ -79,6 +80,19 @@ public interface IElementImpl
             return ancestorType.cast(parent);
         return Elements.getAncestor(parent, ancestorType);
     }
+
+    /**
+     * Returns the model that owns this element. This is a handle-only method.
+     * <p>
+     * Note that the relationship between an element and its owing model does
+     * not change over the lifetime of an element.
+     * </p>
+     *
+     * @param element not <code>null</code>
+     * @return the element's model (never <code>null</code>)
+     * @throws IllegalStateException if the model is no longer accessible
+     */
+    IModel hModel();
 
     /**
      * Returns the innermost resource enclosing this element, or <code>null</code>
