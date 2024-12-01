@@ -1,0 +1,46 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build-latest-target:
+    name: Build & Test (Latest Target)
+
+    runs-on: macos-latest
+
+    steps:
+    - name: Check out source code
+      uses: actions/checkout@v4
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+        cache-dependency-path: |
+          **/pom.xml
+          targets/latest/latest.target
+    - name: Build and test
+      run: mvn verify -Dtycho.localArtifacts=ignore -B -V
+      working-directory: ./releng
+
+  build-base-target:
+    name: Build & Test (Base Target)
+
+    runs-on: macos-latest
+
+    steps:
+    - name: Check out source code
+      uses: actions/checkout@v4
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+        cache-dependency-path: |
+          **/pom.xml
+          targets/base/base.target
+    - name: Build and test
+      run: mvn verify -Dtycho.localArtifacts=ignore -Dtarget=base -B -V
+      working-directory: ./releng
