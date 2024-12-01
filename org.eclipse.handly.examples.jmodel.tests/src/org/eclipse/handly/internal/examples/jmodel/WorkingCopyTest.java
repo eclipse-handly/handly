@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2023 1C-Soft LLC.
+ * Copyright (c) 2015, 2024 1C-Soft LLC.
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which is available at
@@ -41,6 +41,7 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -61,6 +62,7 @@ public class WorkingCopyTest
     protected void setUp() throws Exception
     {
         super.setUp();
+        JavaRuntime.getDefaultVMInstall(); // force VM install initialization
         IProject project = setUpProject("Test010");
         workingCopy = (CompilationUnit)JavaModelCore.createCompilationUnitFrom(
             project.getFile(new Path("src/X.java")));
