@@ -16,7 +16,7 @@ jobs:
       with:
         java-version: |
           11
-          17
+          21
         distribution: 'temurin'
         cache: 'maven'
         cache-dependency-path: |
@@ -39,7 +39,7 @@ jobs:
       with:
         java-version: |
           11
-          17
+          21
         distribution: 'temurin'
         cache: 'maven'
         cache-dependency-path: |

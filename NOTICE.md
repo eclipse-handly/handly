@@ -41,11 +41,11 @@ ANTLR Runtime 3.2
 
  * License: BSD-3-Clause
 
-Apache Commons Logging 1.3.4
+Apache Commons Logging 1.3.5
 
  * License: Apache-2.0
 
-Google Guava 33.3.1
+Google Guava 33.4.0
 
  * License: Apache-2.0
 
@@ -61,6 +61,6 @@ hamcrest-core 3.0
 
  * License: BSD-3-Clause
 
-reload4j 1.2.25
+reload4j 1.2.26
 
  * License: Apache-2.0

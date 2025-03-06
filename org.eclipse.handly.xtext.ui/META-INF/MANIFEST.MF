@@ -12,8 +12,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.22.0,4.0.0)",
  org.eclipse.handly;bundle-version="[1.7.0,2.0.0)",
  org.eclipse.handly.ui;bundle-version="[1.7.0,2.0.0)",
- org.eclipse.xtext.ui;bundle-version="[2.25.0,2.38.0)",
- org.eclipse.xtext.common.types;bundle-version="[2.25.0,2.38.0)";resolution:=optional,
+ org.eclipse.xtext.ui;bundle-version="[2.25.0,2.39.0)",
+ org.eclipse.xtext.common.types;bundle-version="[2.25.0,2.39.0)";resolution:=optional,
  org.eclipse.ui.ide;bundle-version="[3.18.0,4.0.0)"
 Export-Package: org.eclipse.handly.xtext.ui.callhierarchy,
  org.eclipse.handly.xtext.ui.editor,
