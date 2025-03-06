@@ -14,14 +14,16 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: |
+          17
+          21
         distribution: 'temurin'
         cache: 'maven'
         cache-dependency-path: |
           **/pom.xml
           targets/latest/latest.target
     - name: Build and test
-      run: mvn verify -Dtycho.localArtifacts=ignore -B -V
+      run: mvn verify -Dtycho.localArtifacts=ignore -B -V -Pbree-libs
       working-directory: ./releng
 
   build-base-target:
@@ -35,12 +37,14 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: |
+          17
+          21
         distribution: 'temurin'
         cache: 'maven'
         cache-dependency-path: |
           **/pom.xml
           targets/base/base.target
     - name: Build and test
-      run: mvn verify -Dtycho.localArtifacts=ignore -Dtarget=base -B -V
+      run: mvn verify -Dtycho.localArtifacts=ignore -Dtarget=base -B -V -Pbree-libs
       working-directory: ./releng

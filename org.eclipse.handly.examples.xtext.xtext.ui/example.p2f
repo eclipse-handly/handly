@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
-   Copyright (c) 2019, 2024 1C-Soft LLC.
+   Copyright (c) 2019, 2025 1C-Soft LLC.
 
    This program and the accompanying materials are made available under
    the terms of the Eclipse Public License 2.0 which is available at
@@ -16,7 +16,7 @@
   <ius size='1'>
     <iu id='org.eclipse.xtext.sdk.feature.group'>
       <repositories size='1'>
-        <repository location='http://download.eclipse.org/releases/2024-12'/>
+        <repository location='http://download.eclipse.org/releases/2025-03'/>
       </repositories>
     </iu>
   </ius>
