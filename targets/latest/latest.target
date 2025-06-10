@@ -19,7 +19,7 @@
 <repository location="https://download.eclipse.org/cbi/updates/license/2.0.2.v20181016-2210"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<repository location="https://download.eclipse.org/releases/2025-03/202503121000/"/>
+<repository location="https://download.eclipse.org/releases/2025-06/202506111000/"/>
 <unit id="org.eclipse.sdk.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.emf.mwe.sdk.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.emf.mwe2.language.sdk.feature.group" version="0.0.0"/>
@@ -27,4 +27,5 @@
 <unit id="org.eclipse.xtext.sdk.feature.group" version="0.0.0"/>
 </location>
 </locations>
+<targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21"/>
 </target>
