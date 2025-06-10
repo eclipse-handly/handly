@@ -19,7 +19,7 @@
 <unit id="org.eclipse.sdk.feature.group" version="0.0.0"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<repository location="http://download.eclipse.org/handly/releases/1.7.11/repository"/>
+<repository location="http://download.eclipse.org/handly/releases/1.7.12/repository"/>
 <unit id="org.eclipse.handly.ui" version="0.0.0"/>
 <unit id="org.eclipse.handly.junit" version="0.0.0"/>
 </location>
