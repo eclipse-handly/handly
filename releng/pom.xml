@@ -17,7 +17,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.eclipse.handly</groupId>
   <artifactId>releng</artifactId>
-  <version>1.7.12-SNAPSHOT</version>
+  <version>1.7.13-SNAPSHOT</version>
   <packaging>pom</packaging>
   <properties>
     <tycho.version>4.0.13</tycho.version>
@@ -199,7 +199,7 @@
                 <artifact>
                   <groupId>org.eclipse.handly.targets</groupId>
                   <artifactId>base</artifactId>
-                  <version>1.7.12-SNAPSHOT</version>
+                  <version>1.7.13-SNAPSHOT</version>
                 </artifact>
               </target>
             </configuration>
@@ -225,7 +225,7 @@
                 <artifact>
                   <groupId>org.eclipse.handly.targets</groupId>
                   <artifactId>latest</artifactId>
-                  <version>1.7.12-SNAPSHOT</version>
+                  <version>1.7.13-SNAPSHOT</version>
                 </artifact>
               </target>
             </configuration>
