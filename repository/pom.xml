@@ -18,7 +18,7 @@
   <parent>
     <groupId>org.eclipse.handly</groupId>
     <artifactId>releng</artifactId>
-    <version>1.7.13-SNAPSHOT</version>
+    <version>1.7.14-SNAPSHOT</version>
     <relativePath>../releng</relativePath>
   </parent>
   <artifactId>repository</artifactId>
@@ -26,7 +26,7 @@
   <properties>
     <handly.version.major>1</handly.version.major>
     <handly.version.minor>7</handly.version.minor>
-    <handly.version.service>13</handly.version.service>
+    <handly.version.service>14</handly.version.service>
     <handly.version>${handly.version.major}.${handly.version.minor}.${handly.version.service}.${buildQualifier}</handly.version>
     <ant-optional.version>1.5.3-1</ant-optional.version>
     <ant-xalan2.version>1.10.7</ant-xalan2.version>
