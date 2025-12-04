@@ -45,7 +45,7 @@ Apache Commons Logging 1.3.5
 
  * License: Apache-2.0
 
-Google Guava 33.4.8
+Google Guava 33.5.0
 
  * License: Apache-2.0
 
