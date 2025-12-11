@@ -14,7 +14,7 @@
 <feature
       id="org.eclipse.handly.tests"
       label="%featureName"
-      version="1.7.13.qualifier"
+      version="1.7.14.qualifier"
       provider-name="%providerName"
       license-feature="org.eclipse.license"
       license-feature-version="2.0.2.qualifier">
