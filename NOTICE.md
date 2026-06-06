@@ -41,11 +41,11 @@ ANTLR Runtime 3.2
 
  * License: BSD-3-Clause
 
-Apache Commons Logging 1.3.5
+Apache Commons Logging 1.3.6
 
  * License: Apache-2.0
 
-Google Guava 33.5.0
+Google Guava 33.6.0
 
  * License: Apache-2.0
 
