@@ -21,10 +21,11 @@
 # uploaded to Handly downloads area on download.eclipse.org.
 #
 # To add p2.mirrorsURL and p2.statsURI properties to the artifact repository
-# this script uses xsltproc and the p2.xsl file co-located with this file.
+# this script uses xsltproc (or xmlstarlet if xsltproc is not available)
+# and the p2.xsl file co-located with this file.
 #
 # Requirements:
-# * xsltproc, xz, zip and unzip utilities
+# * xsltproc or xsltproc, xz, zip and unzip utilities
 #
 # Optional:
 # * BUILD_DIR may specify a root directory for build artifacts.
@@ -39,7 +40,7 @@
 # Usage: ./prepublish.sh
 
 BUILD_DIR=${BUILD_DIR:-"../repository/target"}
-[ ! -f "$BUILD_DIR/VERSION" ] && echo "Error: VERSION file does not exist" && exit 1
+[ ! -f "$BUILD_DIR/VERSION" ] && echo "Error: VERSION file does not exist" >&2 && exit 1
 BUILD_VERSION=$(head -n 1 $BUILD_DIR/VERSION)
 BUILD_LABEL=${BUILD_LABEL:-$BUILD_VERSION}
 OUTPUT_DIR="$BUILD_DIR/$BUILD_LABEL"
@@ -66,7 +67,25 @@ DOWNLOADS_AREA=${DOWNLOADS_AREA:-"releases"}
 REMOTE_REPO_PATH="/handly/$DOWNLOADS_AREA/$BUILD_LABEL/repository"
 MIRRORS_URL="http://www.eclipse.org/downloads/download.php?file=$REMOTE_REPO_PATH&format=xml"
 
-unzip -p $REPO_PATH/artifacts.jar | xsltproc -stringparam mirrorsURL "$MIRRORS_URL" -stringparam statsId "$BUILD_LABEL" p2.xsl - > artifacts.xml
+add_p2_properties() {
+    if which xsltproc >/dev/null 2>&1; then
+        xsltproc -stringparam mirrorsURL "$MIRRORS_URL" \
+                 -stringparam statsId "$BUILD_LABEL" \
+                 p2.xsl -
+
+    elif which xmlstarlet >/dev/null 2>&1; then
+        xmlstarlet tr p2.xsl \
+                   -s mirrorsURL="$MIRRORS_URL" \
+                   -s statsId="$BUILD_LABEL" \
+                   -
+
+    else
+        echo "Error: neither xsltproc nor xmlstarlet was found on this system" >&2
+        return 1
+    fi
+}
+
+unzip -p $REPO_PATH/artifacts.jar | add_p2_properties > artifacts.xml
 if [[ "$?" != "0" ]]; then
     rm -f artifacts.xml
     exit 1
@@ -80,7 +99,7 @@ fi
 
 XZ_EXE=$(which xz)
 if [[ "$?" != "0" || -z "${XZ_EXE}" ]]; then
-    echo "Error: cannot locate xz executable"
+    echo "Error: cannot locate xz executable" >&2
     rm -f artifacts.xml
     exit 1
 fi
@@ -99,4 +118,4 @@ fi
 
 rm -f artifacts.xml
 
-echo "$OUTPUT_DIR directory is ready for publishing"
+echo "'$OUTPUT_DIR' directory is ready for publishing"
