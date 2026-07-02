@@ -21,10 +21,11 @@
 # uploaded to Handly downloads area on download.eclipse.org.
 #
 # To add p2.mirrorsURL and p2.statsURI properties to the artifact repository
-# this script uses xsltproc and the p2.xsl file co-located with this file.
+# this script uses xsltproc (or xmlstarlet if xsltproc is not available)
+# and the p2.xsl file co-located with this file.
 #
 # Requirements:
-# * xsltproc, xz, zip and unzip utilities
+# * xsltproc or xmlstarlet, xz, zip and unzip utilities
 #
 # Optional:
 # * BUILD_DIR may specify a root directory for build artifacts.
@@ -117,4 +118,4 @@ fi
 
 rm -f artifacts.xml
 
-echo "'$OUTPUT_DIR' directory is ready for publishing"
+echo "$BUILD_LABEL is ready for publishing from $OUTPUT_DIR"
